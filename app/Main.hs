@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Lineman (projectName)
-
+import Relude
 
 main :: IO ()
-main = putStrLn ("Executable for " ++ projectName)
+main = putText ("Executable for " <> projectName)
