@@ -49,6 +49,7 @@ common common-options
 
   default-extensions:  NoImplicitPrelude
                        OverloadedStrings
+                       RecordWildCards
 
 library
   import:              common-options
@@ -57,6 +58,9 @@ library
   build-depends:
                        path
                      , path-io ^>=1.6.2
+                     , process
+                     , directory
+                     , filepath
 
 executable lineman
   import:              common-options
