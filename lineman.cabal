@@ -16,15 +16,16 @@ category:            Utility
 build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
-tested-with:         GHC == 8.10.2
+tested-with:         GHC == 8.8.4
 
 source-repository head
   type:                git
   location:            https://github.com/metaxis/lineman.git
 
 common common-options
-  build-depends:       base ^>= 4.14.0.0
+  build-depends:       base ^>= 4.13.0.0
                      , relude
+
 
   ghc-options:         -Wall
                        -Wcompat
@@ -53,6 +54,11 @@ library
   import:              common-options
   hs-source-dirs:      src
   exposed-modules:     Lineman
+  build-depends:
+                       path
+                     , path-io
+                    --  , directory
+                      --  tomland
 
 executable lineman
   import:              common-options
