@@ -1,4 +1,4 @@
-cabal-version:       2.4
+cabal-version:       3.0
 name:                lineman
 version:             0.0.0.0
 synopsis:            traverse directory and run command
@@ -56,9 +56,7 @@ library
   exposed-modules:     Lineman
   build-depends:
                        path
-                     , path-io
-                    --  , directory
-                      --  tomland
+                     , path-io ^>=1.6.2
 
 executable lineman
   import:              common-options
