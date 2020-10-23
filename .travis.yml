@@ -22,6 +22,7 @@ install:
   # HLint check
   - curl -sSL https://raw.github.com/ndmitchell/neil/master/misc/travis.sh | sh -s -- hlint .
 
+  # For strict add --ghc-options=-Werror to stack command
   - |
     if [ -z "$STACK_YAML" ]; then
       cabal v2-update
@@ -29,7 +30,7 @@ install:
     else
       curl -sSL https://get.haskellstack.org/ | sh
       stack --version
-      stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --ghc-options=-Werror
+      stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
     fi
 
 script:
@@ -42,3 +43,4 @@ script:
 
 notifications:
   email: false
+

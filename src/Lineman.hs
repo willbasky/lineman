@@ -1,10 +1,8 @@
 {-# LANGUAGE DerivingStrategies #-}
-module Lineman
-    (
-    ) where
+module Lineman where
 
 import Relude
-import Relude.String
+-- import Relude.String
 
 import Path.IO hiding (findFiles, findFilesWith)
 import Path.Posix
@@ -16,7 +14,7 @@ dirForClean = do
   stack <- parseRelFile "stack.yaml"
   print stack
   print dir
-  (dirs, files) <- listDirRecur dir
+  (dirs, _) <- listDirRecur dir
   findFiles dirs stack
 
 
