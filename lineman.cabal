@@ -50,6 +50,7 @@ common common-options
   default-extensions:  NoImplicitPrelude
                        OverloadedStrings
                        RecordWildCards
+                       ScopedTypeVariables
 
 library
   import:              common-options
