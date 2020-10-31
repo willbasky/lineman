@@ -114,7 +114,7 @@ findDirsDyFiles (d : ds) files dirs exts = do
   existFiles <- allM (\f -> doesFileExist $ d </> f) files
   existDirs <- allM (\f -> doesDirExist $ d </> f) dirs
   existExts <- isExtsInFiles exts dFiles
-  if and [existFiles, existDirs, existExts]
+  if existFiles && existDirs && existExts
     then (d :) <$> findDirsDyFiles ds files dirs exts
     else findDirsDyFiles ds files dirs exts
 
