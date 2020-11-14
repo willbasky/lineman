@@ -1,0 +1,19 @@
+
+# taregetDirectory consume 'rel', 'abs' and '~'' paths
+taregetDirectory = "~/Documents/test"
+
+# Target directory has files
+hasFiles         = []
+
+# Target directory has directories
+hasDirectories   = []
+
+# Target directory has extensions.
+# It consume exts with and without '.'
+hasExtensions    = []
+
+# Command to run in searched directories
+command          = "pwd"
+
+# Command's arguments
+args             = []
