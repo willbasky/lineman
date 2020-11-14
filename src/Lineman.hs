@@ -8,13 +8,15 @@ module Lineman
 
 import           Relude                hiding (unlessM)
 
+import           Control.Exception     (try)
+import qualified Control.Monad.Extra as E
+import qualified Data.List.Extra as E
 import           Path.IO
 import           Path.Posix
 import qualified System.Directory      as D
 import           System.Exit
 import qualified System.FilePath.Posix as FP
 import           System.Process
-import           Control.Exception (try)
 
 
 
@@ -28,10 +30,15 @@ data Config = Config
   }
   deriving stock (Show, Eq)
 
+data FoundPath = FoundPath
+  { foundPath :: ![Path Abs Dir]
+  }
+  deriving stock (Show, Eq)
+
 launchActionInDirs :: Config -> IO ()
 launchActionInDirs Config{..} = do
   dirs <- normailzeAndGetDirs taregetDirectory hasFiles hasDirectories hasExtensions
-  codes <- forM dirs $ \d -> do
+  codes <- seq dirs $ forM dirs $ \d -> do
     putTextLn $ "Action is running at " <> show d
     withCurrentDir d $ action command args
   -- for debuging
@@ -51,7 +58,7 @@ launchActionInDirs Config{..} = do
 
 normailzeAndGetDirs :: FilePath -> [FilePath] -> [FilePath] -> [String] -> IO [Path Abs Dir]
 normailzeAndGetDirs pathTarget pathFiles pathDirs exts = do
-  mTarget <- normilizeDirAbs pathTarget -- "/home/metaxis/sources/Haskell/"
+  mTarget <- normilizeDirAbs $ E.trim pathTarget -- "/home/metaxis/sources/Haskell/"
   mFiles <- sequence <$> traverse normilizeFile pathFiles -- ["stack.yaml", "README.md"]
   dirs <- traverse normilizeDirRel pathDirs
   case (mTarget, mFiles) of
@@ -61,19 +68,19 @@ normailzeAndGetDirs pathTarget pathFiles pathDirs exts = do
 getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> IO [Path Abs Dir]
 getDirsForCommand target files dirs exts = do
   (targets, _) <- listDirRecur target
-  findDirsDyFiles (target : targets) files dirs exts
+  seq targets $ findDirsDyFiles (target : targets) files dirs exts
 
 
 normilizeDirAbs :: FilePath -> IO (Maybe (Path Abs Dir))
 normilizeDirAbs path = do
-  canPath <- D.canonicalizePath path
-  ifM (D.doesDirectoryExist canPath) (makeAbs canPath) (pure Nothing)
-  where
-    makeAbs canPath = do
-      someDir <- parseSomeDir canPath
-      case someDir of
-        Abs a -> pure $ Just a
-        Rel r -> Just <$> makeAbsolute r
+  let (homeMarker, relPath) = splitAt 1 path
+  path' <- E.whenMaybe (homeMarker == "~" ) $ do
+    home <- D.getHomeDirectory
+    pure $ home <> "/" <> relPath
+  someDir <- parseSomeDir $ fromMaybe path path'
+  case someDir of
+    Abs a -> pure $ Just a
+    Rel r -> Just <$> makeAbsolute r
 
 normilizeDirRel :: FilePath -> IO (Path Rel Dir)
 normilizeDirRel = parseRelDir
@@ -92,7 +99,10 @@ normilizeFile path =
 
 action :: FilePath -> [String] -> IO ExitCode
 action commandName args = do
-  (_,_,_,handleProc) <- createProcess $ proc commandName args
+  (stin,stout,sterr,handleProc) <- createProcess $ proc commandName args
+  whenJust stin print
+  whenJust stout print
+  whenJust sterr print
   waitForProcess handleProc
 
 
@@ -126,4 +136,4 @@ isExtsInFiles exts files = flip allM exts $ \e -> do
     hasExt <- try $ fileExtension df
     pure $ case hasExt of
       Left (_ :: PathException) -> False
-      Right fExt -> fExt == normalizedExt
+      Right fExt                -> fExt == normalizedExt
