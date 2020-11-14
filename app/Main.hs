@@ -1,17 +1,22 @@
 module Main (main) where
 
-import           Lineman (Config (..), launchActionInDirs)
-import           Relude
+import           Config             (getConfig)
+import           Cooker             (safeHead)
+import           Lineman            (launchAction)
+import           System.Environment (getArgs)
+import           Text.Pretty.Simple (pPrint, pPrintString)
 
 main :: IO ()
-main = launchActionInDirs conf
+main = do
+  mArgs <- safeHead <$> getArgs
+  case mArgs of
+    Nothing -> pPrintString "No toml's config path found in args"
+    Just path -> do
+      config <- getConfig path
+      pPrint config
+      pPrintString "Launch command with that Config? (yes/no)"
+      str <- getLine
+      case str of
+        "yes" -> launchAction config
+        _ -> pPrintString "... then bye"
 
-conf :: Config
-conf = Config
-  { taregetDirectory = "~/Documents/test"
-  , hasFiles         = []
-  , hasDirectories   = []
-  , hasExtensions    = [] -- consume exts with and without '.'
-  , command          = "pwd"
-  , args             = []
-  }
