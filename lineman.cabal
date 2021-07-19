@@ -7,7 +7,7 @@ description:
     See [README.md](https://github.com/metaxis/lineman#lineman) for more details.
 homepage:            https://github.com/metaxis/lineman
 bug-reports:         https://github.com/metaxis/lineman/issues
-license:             UNLICENSE
+license:             Unlicense
 license-file:        UNLICENSE
 author:              Vladislav Sabanov
 maintainer:          Vladislav Sabanov <willgame@mail.ru>
