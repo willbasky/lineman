@@ -1,11 +1,13 @@
-resolver: lts-16.21
+resolver: lts-19.7
 
 extra-deps:
+- tomland-1.3.3.1
+- validation-selective-0.1.0.1
+- selective-0.4.2
 
+# - git: https://github.com/mrkkrp/path-io
+#   commit: 0d20b320f7885bad6c3ac948a3549d645f224c9a
 
-- git: https://github.com/mrkkrp/path-io
-  commit: 0d20b320f7885bad6c3ac948a3549d645f224c9a
-
-- git: https://github.com/commercialhaskell/path
-  commit: a75ddfc86319cd2187eb8965bdb11b52690fa002
+# - git: https://github.com/commercialhaskell/path
+#   commit: a75ddfc86319cd2187eb8965bdb11b52690fa002
 

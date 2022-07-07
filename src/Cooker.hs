@@ -3,15 +3,19 @@ module Cooker
   , normailzeConfig
   ) where
 
+import           Control.Monad         (forM)
 import qualified Control.Monad.Extra   as E
 import qualified Data.List.Extra       as E
-import           Path.IO
-import           Path.Posix
+import           Data.Maybe            (fromMaybe)
+import           Data.Set              (toList)
+import           Path.IO               (AnyPath (makeAbsolute))
+import           Path.Posix            (Abs, Dir, File, Path, Rel,
+                                        SomeBase (Abs, Rel), parseRelDir,
+                                        parseSomeDir, parseSomeFile)
 import qualified System.Directory      as D
 import qualified System.FilePath.Posix as FP
-import           Data.Maybe            (fromMaybe)
 
-import           Types                 (Config (..))
+import           Types                 (Config (..), ConfigElement (..))
 
 
 
@@ -51,11 +55,19 @@ normilizeFile path =
 
 normailzeConfig
   :: Config
-  -> IO (Maybe (Path Abs Dir), Maybe [Path Rel File], [Path Rel Dir], [String])
+  -> IO [ (Maybe (Path Abs Dir)
+        , Maybe [Path Rel File]
+        , [Path Rel Dir]
+        , [String]
+        , String
+        , [String])
+        ]
 normailzeConfig Config{..} = do
   mTarget <- normilizeDirAbs $ E.trim taregetDirectory
-  mFiles <- sequence <$> traverse normilizeFile hasFiles
-  dirs <- traverse normilizeDirRel hasDirectories
-  let normalizedExt e = if "." == take 1 e then e else '.' : e
-  let exts = map normalizedExt hasExtensions
-  pure (mTarget, mFiles, dirs, exts)
+  let list = toList configElement
+  forM list $ \ConfigElement{..} -> do
+    mFiles <- sequence <$> traverse normilizeFile (toList hasFiles)
+    dirs <- traverse normilizeDirRel $ toList hasDirectories
+    let normalizedExt e = if "." == take 1 e then e else '.' : e
+    let exts = map normalizedExt $ toList hasExtensions
+    pure (mTarget, mFiles, dirs, exts, command, toList args)

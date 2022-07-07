@@ -23,7 +23,7 @@ source-repository head
   location:            https://github.com/metaxis/lineman.git
 
 common common-options
-  build-depends:       base ^>= 4.13.0.0
+  build-depends:       base ^>= 4.15.1.0
                      , pretty-simple
 
   ghc-options:         -Wall
@@ -59,10 +59,11 @@ library
                        Types
   build-depends:
                        directory
+                     , containers
                      , extra
                      , filepath
                      , path
-                     , path-io ^>=1.6.2
+                     , path-io
                      , process
                      , tomland
                      , text

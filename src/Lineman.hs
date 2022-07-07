@@ -3,30 +3,44 @@ module Lineman
        ) where
 
 import           Control.Exception   (try)
-import           Control.Monad       (forM)
+import           Control.Monad       (forM, forM_)
 import qualified Control.Monad.Extra as E
-import           Path.IO
-import           Path.Posix
-import           System.Exit
-import           System.Process
+import Path.IO
+    ( doesDirExist,
+      doesFileExist,
+      listDir,
+      listDirRecur,
+      withCurrentDir )
+import Path.Posix
+    ( (</>), fileExtension, Path, Abs, Dir, File, PathException, Rel )
+import System.Exit ( ExitCode(ExitSuccess) )
+-- import qualified System.IO           as SIO
+import System.Process ( createProcess, proc, waitForProcess )
 import           Text.Pretty.Simple  (pPrintString)
 
 import           Cooker              (normailzeConfig)
 import           Types               (Config (..))
 
+-- import Debug.Trace
 
 
 
 launchAction :: Config -> IO ()
-launchAction config@Config{..} = do
-  (mTarget, mFiles, dirs, exts) <- normailzeConfig config
-  dirsForLaunch <- case (mTarget, mFiles) of
-    (Just t, Just fs) -> getDirsForCommand t fs dirs exts
-    _                 -> pure []
-  codes <- seq dirsForLaunch $ forM dirsForLaunch $ \d -> do
-    pPrintString $ "Action is running at " <> show d
-    withCurrentDir d $ action command args
-  -- for debuging
+launchAction config = do
+  list <- normailzeConfig config
+  forM_ list $ \(mTarget, mFiles, dirs, exts, command, args) -> do
+    -- traceIO $ show mTarget
+    -- traceIO $ show mFiles
+    dirsForLaunch <- case (mTarget, mFiles) of
+      (Just t, Just fs) -> getDirsForCommand t fs dirs exts
+      _                 -> pure []
+    -- SIO.hSetBuffering SIO.stdout SIO.LineBuffering
+    -- SIO.hSetBuffering SIO.stderr SIO.LineBuffering
+    -- traceIO $ show dirsForLaunch
+    codes <- seq dirsForLaunch $ forM dirsForLaunch $ \d -> do
+      pPrintString $ "Action is running at " <> show d
+      withCurrentDir d $ action command args
+    -- for debuging
 
     -- code <- withCurrentDir d $ action command args
     -- case code of
@@ -34,9 +48,9 @@ launchAction config@Config{..} = do
     --   ExitFailure n -> putStrLn $ "Action failed with code " <> show n
     -- pure code
 
-  if all (== ExitSuccess) codes
-    then pPrintString "All actions successfuly finished!"
-    else pPrintString "Some action(s) failed"
+    if all (== ExitSuccess) codes
+      then pPrintString "All actions successfuly finished!"
+      else pPrintString "Some action(s) failed"
 
   -- mapM_ print dirs
 
@@ -44,7 +58,13 @@ launchAction config@Config{..} = do
 getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> IO [Path Abs Dir]
 getDirsForCommand target files dirs exts = do
   (targets, _) <- listDirRecur target
-  seq targets $ findDirsDyFiles (target : targets) files dirs exts
+  -- mapM_ (traceIO . show) targets
+  -- traceIO $ show files
+  -- traceIO $ show dirs
+  seq targets $ do
+    res <- findDirsDyFiles (target : targets) files dirs exts
+    -- traceIO $ show res
+    pure res
 
 
 action :: FilePath -> [String] -> IO ExitCode
@@ -72,6 +92,9 @@ findDirsDyFiles d [] [] [] = pure d
 findDirsDyFiles (d : ds) files dirs exts = do
   dFiles <- snd <$> listDir d
   existFiles <- E.allM (\f -> doesFileExist $ d </> f) files
+  -- traceIO $ show d
+  -- traceIO $ show files
+  -- traceIO $ show existFiles
   existDirs <- E.allM (\f -> doesDirExist $ d </> f) dirs
   existExts <- isExtsInFiles exts dFiles
   if existFiles && existDirs && existExts
