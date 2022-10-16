@@ -1,29 +1,31 @@
 cabal-version:       3.0
 name:                lineman
-version:             0.0.4
+version:             0.0.5
 synopsis:            traverse directory and run command
 description:
     Lineman traverses directory recursively and run command by condition
     See [README.md](https://github.com/metaxis/lineman#lineman) for more details.
 homepage:            https://github.com/metaxis/lineman
 bug-reports:         https://github.com/metaxis/lineman/issues
-license:             Unlicense
-license-file:        UNLICENSE
+license:             BSD-3-Clause
+license-file:        LICENSE
 author:              Vladislav Sabanov
 maintainer:          Vladislav Sabanov <willgame@mail.ru>
-copyright:           2020 Vladislav Sabanov
+copyright:           2022 Vladislav Sabanov
 category:            Utility
 build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
-tested-with:         GHC == 8.8.4
+tested-with:
+  GHC == 8.10.7
+  GHC == 9.0.2
 
 source-repository head
   type:                git
   location:            https://github.com/metaxis/lineman.git
 
 common common-options
-  build-depends:       base ^>= 4.15.1.0
+  build-depends:       base >= 4.14 && < 4.16
                      , pretty-simple
 
   ghc-options:         -Wall
