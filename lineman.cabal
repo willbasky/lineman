@@ -7,11 +7,11 @@ description:
     See [README.md](https://github.com/metaxis/lineman#lineman) for more details.
 homepage:            https://github.com/metaxis/lineman
 bug-reports:         https://github.com/metaxis/lineman/issues
-license:             Unlicense
-license-file:        UNLICENSE
+license:             BSD-3-Clause
+license-file:        LICENSE
 author:              Vladislav Sabanov
 maintainer:          Vladislav Sabanov <willgame@mail.ru>
-copyright:           2020 Vladislav Sabanov
+copyright:           2022 Vladislav Sabanov
 category:            Utility
 build-type:          Simple
 extra-doc-files:     README.md
@@ -62,7 +62,7 @@ library
   build-depends:
                        lifted-async
                      , containers
-                     , co-log ^>=0.4.0.2
+                     , co-log
                      , directory
                      , extra
                      , exceptions

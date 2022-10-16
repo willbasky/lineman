@@ -7,6 +7,7 @@ The changelog is available [on GitHub][2].
 ## 0.0.5
 
 * Swap `travis-ci` with `haskell-ci`
+* Update license to BSD3
 
 ## 0.0.4
 
