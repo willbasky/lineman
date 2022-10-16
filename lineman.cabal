@@ -17,7 +17,7 @@ build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
 tested-with:
-  GHC == 8.8.4
+  GHC == 8.10.7
   GHC == 9.0.2
 
 source-repository head
@@ -25,7 +25,7 @@ source-repository head
   location:            https://github.com/metaxis/lineman.git
 
 common common-options
-  build-depends:       base > 4.14.0.0
+  build-depends:       base >= 4.14 && < 4.16
                      , pretty-simple
 
   ghc-options:         -Wall
@@ -62,7 +62,7 @@ library
   build-depends:
                        lifted-async
                      , containers
-                     , co-log
+                     , co-log ^>=0.4.0.2
                      , directory
                      , extra
                      , exceptions
