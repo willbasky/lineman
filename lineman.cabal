@@ -1,6 +1,6 @@
 cabal-version:       3.0
 name:                lineman
-version:             0.0.4
+version:             0.0.5
 synopsis:            traverse directory and run command
 description:
     Lineman traverses directory recursively and run command by condition
