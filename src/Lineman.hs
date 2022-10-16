@@ -1,79 +1,78 @@
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeApplications #-}
+
+
 module Lineman
        ( launchAction
        ) where
 
-import           Control.Exception   (try)
-import           Control.Monad       (forM, forM_)
+import Colog (pattern D, pattern E, pattern I, log)
+import Control.Concurrent.Async.Lifted ( forConcurrently )
+import Control.Exception (try)
+import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
-import Path.IO
-    ( doesDirExist,
-      doesFileExist,
-      listDir,
-      listDirRecur,
-      withCurrentDir )
-import Path.Posix
-    ( (</>), fileExtension, Path, Abs, Dir, File, PathException, Rel )
-import System.Exit ( ExitCode(ExitSuccess) )
--- import qualified System.IO           as SIO
-import System.Process ( createProcess, proc, waitForProcess )
-import           Text.Pretty.Simple  (pPrintString)
-
-import           Cooker              (normailzeConfig)
-import           Types               (Config (..))
-
--- import Debug.Trace
+import Control.Monad.IO.Class (liftIO)
+import Cooker (normailzeConfig)
+import Data.Text (Text)
+import qualified Data.Text as T
+import GHC.IO.Exception (ExitCode (..))
+import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur, withCurrentDir)
+import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, (</>))
+import Prelude hiding (log)
+import System.Process (createProcess, proc, waitForProcess)
+import System.Process.Extra (showCommandForUser)
+import Text.Pretty.Simple (pPrintString)
+import Types ( App, Config )
+import Control.Exception.Base (SomeException)
 
 
-
-launchAction :: Config -> IO ()
+launchAction :: Config -> App ()
 launchAction config = do
   list <- normailzeConfig config
+  liftIO $ print list
   forM_ list $ \(mTarget, mFiles, dirs, exts, command, args) -> do
-    -- traceIO $ show mTarget
-    -- traceIO $ show mFiles
     dirsForLaunch <- case (mTarget, mFiles) of
       (Just t, Just fs) -> getDirsForCommand t fs dirs exts
       _                 -> pure []
-    -- SIO.hSetBuffering SIO.stdout SIO.LineBuffering
-    -- SIO.hSetBuffering SIO.stderr SIO.LineBuffering
-    -- traceIO $ show dirsForLaunch
-    codes <- seq dirsForLaunch $ forM dirsForLaunch $ \d -> do
-      pPrintString $ "Action is running at " <> show d
-      withCurrentDir d $ action command args
-    -- for debuging
-
-    -- code <- withCurrentDir d $ action command args
-    -- case code of
-    --   ExitSuccess   -> putStrLn "Action successfuly finished!"
-    --   ExitFailure n -> putStrLn $ "Action failed with code " <> show n
-    -- pure code
+    log D $ T.pack $ show dirsForLaunch
+    codes <- seq dirsForLaunch $ forConcurrently dirsForLaunch $ \d -> do
+    -- codes <- seq dirsForLaunch $ forM dirsForLaunch $ \d -> do
+      let act = showCommandForUser command args
+      let dir = T.pack (show d)
+      log I $ "Action \'" <> T.pack act <> "\' is running at " <> dir
+      withCurrentDir d $ action dir command args
 
     if all (== ExitSuccess) codes
       then pPrintString "All actions successfuly finished!"
       else pPrintString "Some action(s) failed"
 
-  -- mapM_ print dirs
 
-
-getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> IO [Path Abs Dir]
+getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> App [Path Abs Dir]
 getDirsForCommand target files dirs exts = do
   (targets, _) <- listDirRecur target
-  -- mapM_ (traceIO . show) targets
-  -- traceIO $ show files
-  -- traceIO $ show dirs
   seq targets $ do
     res <- findDirsDyFiles (target : targets) files dirs exts
-    -- traceIO $ show res
+    log D $ "findDirsDyFiles: " <> T.pack (show res)
     pure res
 
 
-action :: FilePath -> [String] -> IO ExitCode
-action commandName args = do
-  (stin,stout,sterr,handleProc) <- createProcess $ proc commandName args
-  E.whenJust stin print
-  E.whenJust stout print
-  E.whenJust sterr print
-  waitForProcess handleProc
+action :: Text -> FilePath -> [String] -> App ExitCode
+action dir commandName args = do
+  (stin,stout,sterr,handleProc) <-
+    liftIO $ createProcess $ proc commandName args
+  log D $ dir <> " " <> "after proc"
+  E.whenJust stin $ \x -> log D $ "stin: " <> T.pack (show x)
+  E.whenJust stout $ \x -> log D $ "stout: " <> T.pack (show x)
+  E.whenJust sterr $ \x -> log D $ "sterr: " <> T.pack (show x)
+  log D $ dir <> " " <> "after when"
+  res <- liftIO $ try $ waitForProcess handleProc
+  case res of
+    Left err -> do
+      log E $ dir <> " " <> T.pack (show @SomeException err)
+      pure $ ExitFailure 1
+    Right r -> do
+      log D $ dir <> " " <> T.pack (show r)
+      pure r
 
 
 findDirsDyFiles ::
@@ -86,15 +85,15 @@ findDirsDyFiles ::
   -- | Set of extensions of interest
   [String] ->
   -- | Absolute paths to all found files
-  IO [Path Abs Dir]
+  App [Path Abs Dir]
 findDirsDyFiles [] _ _ _ = pure []
 findDirsDyFiles d [] [] [] = pure d
 findDirsDyFiles (d : ds) files dirs exts = do
   dFiles <- snd <$> listDir d
   existFiles <- E.allM (\f -> doesFileExist $ d </> f) files
-  -- traceIO $ show d
-  -- traceIO $ show files
-  -- traceIO $ show existFiles
+  log D $ T.pack (show d)
+  log D $ T.pack (show files)
+  log D $ T.pack (show existFiles)
   existDirs <- E.allM (\f -> doesDirExist $ d </> f) dirs
   existExts <- isExtsInFiles exts dFiles
   if existFiles && existDirs && existExts
@@ -102,8 +101,8 @@ findDirsDyFiles (d : ds) files dirs exts = do
     else findDirsDyFiles ds files dirs exts
 
 
-isExtsInFiles :: [String] -> [Path Abs File] -> IO Bool
-isExtsInFiles exts files = flip E.allM exts $ \ext -> do
+isExtsInFiles :: [String] -> [Path Abs File] -> App Bool
+isExtsInFiles exts files = liftIO $ flip E.allM exts $ \ext -> do
   flip E.anyM files $ \df -> do
     hasExt <- try $ fileExtension df
     pure $ case hasExt of

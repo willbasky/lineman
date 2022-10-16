@@ -3,11 +3,11 @@ module Config
        ) where
 
 
-import           Data.Text          (unpack)
-import           Text.Pretty.Simple (pPrintString)
-import           Toml               (TomlCodec, (.=))
+import Data.Text (unpack)
+import Text.Pretty.Simple (pPrintString)
+import Toml (TomlCodec, (.=))
 import qualified Toml
-import           Types              (Config (..), ConfigElement (..))
+import Types (Config (..), ConfigElement (..))
 
 
 
@@ -23,7 +23,7 @@ getConfig file = do
 configCodec :: TomlCodec Config
 configCodec = Config
     <$> Toml.string "taregetDirectory"  .= taregetDirectory
-    <*> Toml.set configElem "configElement" .= configElement
+    <*> Toml.list configElem "configElement" .= configElement
 
 configElem :: TomlCodec ConfigElement
 configElem = ConfigElement
@@ -31,4 +31,4 @@ configElem = ConfigElement
     <*> Toml.arraySetOf Toml._String "hasDirectories" .= hasDirectories
     <*> Toml.arraySetOf Toml._String "hasExtensions" .= hasExtensions
     <*> Toml.string "command" .= command
-    <*> Toml.arraySetOf Toml._String "args" .= args
+    <*> Toml.arrayOf Toml._String "args" .= args

@@ -1,13 +1,13 @@
 
 # taregetDirectory consume 'rel', 'abs' and '~'' paths
-taregetDirectory = "/home/metaxis/sources/Haskell/education/haskell-in-depth/"
+taregetDirectory = "/home/metaxis/sources/playground/lineTest/"
 
 [[configElement]]
 # Target directory has files
-hasFiles         = []
+hasFiles         = ["readme.txt"]
 
 # Target directory has directories
-hasDirectories   = ["dist-newstyle"]
+hasDirectories   = []
 
 # Target directory has extensions.
 # It consume exts with and without '.'
@@ -17,21 +17,21 @@ hasExtensions    = []
 command          = "rm"
 
 # Command's arguments
-args             = ["-rf","dist-newstyle"]
+args             = ["readme.txt"]
 
 [[configElement]]
 # Target directory has files
 hasFiles         = []
 
 # Target directory has directories
-hasDirectories   = [".stack-work"]
+hasDirectories   = []
 
 # Target directory has extensions.
 # It consume exts with and without '.'
 hasExtensions    = []
 
 # Command to run in searched directories
-command          = "rm"
+command          = "touch"
 
 # Command's arguments
-args             = ["-rf",".stack-work"]
+args             = ["readme.txt"]
