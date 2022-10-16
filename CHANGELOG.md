@@ -3,7 +3,13 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
-## 0.0.0.0
+## 0.0.4
+
+* Add logging with `co-log`.
+* Add `ReaderT IO` pattern for main monad.
+* Add concurrent handling for particular command.
+
+## 0.0.0
 
 * Initially created.
 

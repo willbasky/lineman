@@ -1,13 +1,32 @@
-resolver: lts-19.7
+resolver: lts-19.28
 
 extra-deps:
 - tomland-1.3.3.1
 - validation-selective-0.1.0.1
 - selective-0.4.2
 
+- git: https://github.com/co-log/co-log
+  commit: ff8b8000a3030ad82dc45043aaed4d5293f22c86
+- chronos-1.1.4
+- co-log-core-0.3.1.0
+- typerep-map-0.5.0.0
+- bytebuild-0.3.11.0
+- byteslice-0.2.7.0
+- bytesmith-0.3.9.0
+- contiguous-0.6.2.0
+- run-st-0.1.1.0
+- zigzag-0.0.1.0
+
 # - git: https://github.com/mrkkrp/path-io
 #   commit: 0d20b320f7885bad6c3ac948a3549d645f224c9a
 
 # - git: https://github.com/commercialhaskell/path
 #   commit: a75ddfc86319cd2187eb8965bdb11b52690fa002
+
+setup-info:
+  ghc:
+    linux64-tinfo6:
+      9.0.2:
+        url: "https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz"
+
 
