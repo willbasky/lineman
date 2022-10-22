@@ -23,14 +23,22 @@ or
 
     lineman /path/to/toml/config/
 
-## Toml config example
+## Toml config
+
+[Config example in file](./config.toml)
+
+Description of config fields:
 
 ```toml
 
-# targetDirectory consume 'rel', 'abs' and '~'' paths
+# targetDirectory where you plan lineman to run.
+# It is able to consume 'rel', 'abs' and '~'' paths.
 targetDirectory = "/path/to/directory/for/traversing/"
 
+# configElement is a group that contains conditions and command with args.
+# The conditions define directories where lineman run.
 [[configElement]]
+
 # Target directory has files
 hasFiles         = ["readme.txt"]
 
@@ -41,10 +49,10 @@ hasDirectories   = []
 # It consume exts with and without '.'
 hasExtensions    = []
 
-# Command to run in searched directories
+# Command that run in detected directories.
 command          = "rm"
 
-# Command's arguments
+# Command's arguments.
 args             = ["readme.txt"]
 
 ```
@@ -54,7 +62,7 @@ According to the config `lineman`
 - finds directories that have `readme.txt` file
 - apply `rm readme.txt` in found directories
 
-Groups of `[[configElement]]` can be unlimited. They are run one by one.
+Groups of `[[configElement]]` can be unlimited. They run one by one.
 
 ## Environment variables
 
