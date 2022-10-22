@@ -1,6 +1,6 @@
 
-# taregetDirectory consume 'rel', 'abs' and '~'' paths
-taregetDirectory = "/home/metaxis/sources/playground/lineTest/"
+# targetDirectory consume 'rel', 'abs' and '~'' paths
+targetDirectory = "/home/metaxis/sources/playground/lineTest/"
 
 [[configElement]]
 # Target directory has files

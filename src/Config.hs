@@ -20,7 +20,7 @@ getConfig file = do
 configCodec :: TomlCodec Config
 configCodec =
   Config
-    <$> Toml.string "taregetDirectory" .= taregetDirectory
+    <$> Toml.string "targetDirectory" .= targetDirectory
     <*> Toml.list configElem "configElement" .= configElement
 
 configElem :: TomlCodec ConfigElement

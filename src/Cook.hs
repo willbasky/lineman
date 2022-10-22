@@ -68,7 +68,7 @@ normailzeConfig ::
       )
     ]
 normailzeConfig Config{..} = do
-  mTarget <- normilizeDirAbs $ E.trim taregetDirectory
+  mTarget <- normilizeDirAbs $ E.trim targetDirectory
   forM configElement $ \ConfigElement{..} -> do
     mFiles <- sequence <$> traverse normilizeFile (toList hasFiles)
     dirs <- traverse normilizeDirRel $ toList hasDirectories
