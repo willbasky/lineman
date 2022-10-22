@@ -3,11 +3,11 @@
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs               #-}
+{-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE StrictData                 #-}
 {-# LANGUAGE UndecidableInstances       #-}
-{-# LANGUAGE KindSignatures #-}
 
 
 module Types
@@ -15,6 +15,7 @@ module Types
   , ConfigElement (..)
   , Env (..)
   , App (..)
+  , ActionMode
   ) where
 
 
@@ -25,10 +26,15 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT (..))
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Set (Set)
+import GHC.IO.Exception (ExitCode (..))
+import Path.Posix (Abs, Dir, Path)
+
+
+type ActionMode = [Path Abs Dir] -> (Path Abs Dir -> App ExitCode) -> App [ExitCode]
 
 data Env m = Env
-    { envLogAction  :: LogAction m Message
-    -- , actionMode :: forall (t :: * -> *) (m :: * -> *) a b . t a -> (a -> m b) -> m (t b)
+    { envLogAction :: LogAction m Message
+    , actionMode   :: ActionMode
     }
 
 instance HasLog (Env m) Message m where

@@ -1,4 +1,4 @@
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms  #-}
 {-# LANGUAGE TypeApplications #-}
 
 
@@ -6,12 +6,13 @@ module Lineman
        ( launchAction
        ) where
 
-import Colog (logDebug, logInfo, logError)
-import Control.Concurrent.Async.Lifted ( forConcurrently )
+import Colog (logDebug, logError, logInfo)
 import Control.Exception (try)
+import Control.Exception.Base (SomeException)
 import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (asks)
 import Cooker (normailzeConfig)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -22,8 +23,7 @@ import Prelude hiding (log)
 import System.Process (createProcess, proc, waitForProcess)
 import System.Process.Extra (showCommandForUser)
 import Text.Pretty.Simple (pPrintString)
-import Types ( App, Config )
-import Control.Exception.Base (SomeException)
+import Types (App, Config, actionMode)
 
 
 launchAction :: Config -> App ()
@@ -35,8 +35,8 @@ launchAction config = do
       (Just t, Just fs) -> getDirsForCommand t fs dirs exts
       _                 -> pure []
     logDebug $ T.pack $ show dirsForLaunch
-    codes <- seq dirsForLaunch $ forConcurrently dirsForLaunch $ \d -> do
-    -- codes <- seq dirsForLaunch $ forM dirsForLaunch $ \d -> do
+    forAction <- asks actionMode
+    codes <- seq dirsForLaunch $ forAction dirsForLaunch $ \d -> do
       let act = showCommandForUser command args
       let dir = T.pack (show d)
       logInfo $ "Action \'" <> T.pack act <> "\' is running at " <> dir
