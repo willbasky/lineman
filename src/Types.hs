@@ -59,7 +59,7 @@ newtype App a = App
     )
 
 data Config = Config
-  { taregetDirectory :: FilePath
+  { targetDirectory :: FilePath
   , configElement :: [ConfigElement]
   }
   deriving stock (Show, Eq)

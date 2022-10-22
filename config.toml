@@ -1,6 +1,6 @@
 
-# taregetDirectory consume 'rel', 'abs' and '~'' paths
-taregetDirectory = "/home/metaxis/sources/playground/lineTest/"
+# targetDirectory consume 'rel', 'abs' and '~'' paths
+targetDirectory = "/path/to/your/directory/where/you/run/lineman/"
 
 [[configElement]]
 # Target directory has files
