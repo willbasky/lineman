@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "lineman:lib"
+
+    - path: "./app/Main.hs"
+      component: "lineman:exe:lineman"
+
+    - path: "./test"
+      component: "lineman:test:lineman-test"
