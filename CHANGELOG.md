@@ -4,6 +4,10 @@
 The changelog is available [on GitHub][2].
 
 
+## 0.0.6
+
+* Setup severity with envvar.
+
 ## 0.0.5
 
 * Swap `travis-ci` with `haskell-ci`

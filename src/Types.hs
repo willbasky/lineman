@@ -7,6 +7,7 @@
 {-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE StrictData                 #-}
 {-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE KindSignatures #-}
 
 
 module Types
@@ -26,7 +27,8 @@ import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Set (Set)
 
 data Env m = Env
-    { envLogAction  :: !(LogAction m Message)
+    { envLogAction  :: LogAction m Message
+    -- , actionMode :: forall (t :: * -> *) (m :: * -> *) a b . t a -> (a -> m b) -> m (t b)
     }
 
 instance HasLog (Env m) Message m where
