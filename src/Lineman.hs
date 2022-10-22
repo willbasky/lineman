@@ -1,10 +1,8 @@
-{-# LANGUAGE PatternSynonyms  #-}
 {-# LANGUAGE TypeApplications #-}
 
-
-module Lineman
-       ( launchAction
-       ) where
+module Lineman (
+  launchAction,
+) where
 
 import Colog (logDebug, logError, logInfo)
 import Control.Exception (try)
@@ -13,18 +11,17 @@ import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (asks)
-import Cooker (normailzeConfig)
+import Cook (normailzeConfig)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.IO.Exception (ExitCode (..))
 import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur, withCurrentDir)
 import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, (</>))
-import Prelude hiding (log)
 import System.Process (createProcess, proc, waitForProcess)
 import System.Process.Extra (showCommandForUser)
 import Text.Pretty.Simple (pPrintString)
 import Types (App, Config, actionMode)
-
+import Prelude hiding (log)
 
 launchAction :: Config -> App ()
 launchAction config = do
@@ -33,20 +30,20 @@ launchAction config = do
   forM_ list $ \(mTarget, mFiles, dirs, exts, command, args) -> do
     dirsForLaunch <- case (mTarget, mFiles) of
       (Just t, Just fs) -> getDirsForCommand t fs dirs exts
-      _                 -> pure []
+      _ -> pure []
     logDebug $ T.pack $ show dirsForLaunch
     forAction <- asks actionMode
-    codes <- seq dirsForLaunch $ forAction dirsForLaunch $ \d -> do
-      let act = showCommandForUser command args
-      let dir = T.pack (show d)
-      logInfo $ "Action \'" <> T.pack act <> "\' is running at " <> dir
-      withCurrentDir d $ action dir command args
+    codes <- seq dirsForLaunch $
+      forAction dirsForLaunch $ \d -> do
+        let act = showCommandForUser command args
+        let dir = T.pack (show d)
+        logInfo $ "Action \'" <> T.pack act <> "\' is running at " <> dir
+        withCurrentDir d $ action dir command args
 
     if all (== ExitSuccess) codes
       then pPrintString "All actions successfuly finished!"
       else pPrintString "Some action(s) failed"
     pPrintString ""
-
 
 getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> App [Path Abs Dir]
 getDirsForCommand target files dirs exts = do
@@ -56,10 +53,9 @@ getDirsForCommand target files dirs exts = do
     logDebug $ "findDirsDyFiles: " <> T.pack (show res)
     pure res
 
-
 action :: Text -> FilePath -> [String] -> App ExitCode
 action dir commandName args = do
-  (stin,stout,sterr,handleProc) <-
+  (stin, stout, sterr, handleProc) <-
     liftIO $ createProcess $ proc commandName args
   logDebug $ dir <> " " <> "after proc"
   E.whenJust stin $ \x -> logDebug $ "stin: " <> T.pack (show x)
@@ -74,7 +70,6 @@ action dir commandName args = do
     Right r -> do
       logDebug $ dir <> " " <> T.pack (show r)
       pure r
-
 
 findDirsDyFiles ::
   -- | Set of directories to search in
@@ -101,11 +96,11 @@ findDirsDyFiles (d : ds) files dirs exts = do
     then (d :) <$> findDirsDyFiles ds files dirs exts
     else findDirsDyFiles ds files dirs exts
 
-
 isExtsInFiles :: [String] -> [Path Abs File] -> App Bool
-isExtsInFiles exts files = liftIO $ flip E.allM exts $ \ext -> do
-  flip E.anyM files $ \df -> do
-    hasExt <- try $ fileExtension df
-    pure $ case hasExt of
-      Left (_ :: PathException) -> False
-      Right fExt                -> fExt == ext
+isExtsInFiles exts files = liftIO $
+  flip E.allM exts $ \ext -> do
+    flip E.anyM files $ \df -> do
+      hasExt <- try $ fileExtension df
+      pure $ case hasExt of
+        Left (_ :: PathException) -> False
+        Right fExt -> fExt == ext
