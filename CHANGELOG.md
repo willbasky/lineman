@@ -8,6 +8,7 @@ The changelog is available [on GitHub][2].
 
 * Setup severity with envvar.
 * Swap stylish-haskell with fourmolu.
+* Update README
 
 ## 0.0.5
 
