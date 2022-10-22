@@ -1,4 +1,4 @@
-module Cooker
+module Cook
   ( safeHead
   , normailzeConfig
   ) where

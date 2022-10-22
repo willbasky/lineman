@@ -13,7 +13,7 @@ import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (asks)
-import Cooker (normailzeConfig)
+import Cook (normailzeConfig)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.IO.Exception (ExitCode (..))
