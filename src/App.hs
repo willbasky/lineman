@@ -1,6 +1,6 @@
-module App
-  ( appLineman
-  ) where
+module App (
+  appLineman,
+) where
 
 import Colog (Msg (msgSeverity), filterBySeverity)
 import Colog.Actions (richMessageAction, simpleMessageAction)
@@ -21,7 +21,6 @@ import Cook (safeHead)
 import Lineman (launchAction)
 import Types (App (unApp), Env (..))
 
-
 appLineman :: IO ()
 appLineman = do
   mArgs <- safeHead <$> getArgs
@@ -33,42 +32,42 @@ appLineman = do
       pPrintString "Launch command with that Config? (yes/no)"
       str <- getLine
       when (str == "yes") $ do
-          rich <- getRichEnv
-          let env1 = if rich then setRichLog defaultEnv else defaultEnv
+        rich <- getRichEnv
+        let env1 = if rich then setRichLog defaultEnv else defaultEnv
 
-          threshold <- getSeverityEnv
-          let env2 = setSeverity threshold env1
+        threshold <- getSeverityEnv
+        let env2 = setSeverity threshold env1
 
-          asyncMode <- getAsyncEnv
-          let env3 = if asyncMode then setAsyncMode env2 else env2
+        asyncMode <- getAsyncEnv
+        let env3 = if asyncMode then setAsyncMode env2 else env2
 
-          pPrintString ""
-          when asyncMode $ pPrintString "[ Async mode ]"
-          when rich $ pPrintString "[ Rich logs ]"
-          pPrintString $ "[ " <> show threshold <> " severity ]"
-          pPrintString ""
+        pPrintString ""
+        when asyncMode $ pPrintString "[ Async mode ]"
+        when rich $ pPrintString "[ Rich logs ]"
+        pPrintString $ "[ " <> show threshold <> " severity ]"
+        pPrintString ""
 
-          runApp env3 $ launchAction config
-
+        runApp env3 $ launchAction config
 
 runApp :: Env App -> App a -> IO a
 runApp env app = runReaderT (unApp app) env
 
 setSeverity :: Severity -> Env App -> Env App
-setSeverity threshold env
-  = env { envLogAction = filterBySeverity threshold msgSeverity $ envLogAction env }
+setSeverity threshold env =
+  env{envLogAction = filterBySeverity threshold msgSeverity $ envLogAction env}
 
 setAsyncMode :: Env App -> Env App
-setAsyncMode env
-  = env { actionMode = forConcurrently }
+setAsyncMode env =
+  env{actionMode = forConcurrently}
 
 setRichLog :: Env App -> Env App
-setRichLog env
-  = env { envLogAction = richMessageAction }
+setRichLog env =
+  env{envLogAction = richMessageAction}
 
 defaultEnv :: Env App
-defaultEnv = Env
-    { envLogAction  = simpleMessageAction
+defaultEnv =
+  Env
+    { envLogAction = simpleMessageAction
     , actionMode = forM
     }
 
@@ -88,7 +87,6 @@ getRichEnv = do
   isDebug <- lookupEnv "LINEMAN_RICH_LOG"
   pure $ Just True == (readMaybe . toTitle =<< isDebug)
 
-
 -- Help functions
 
 environmentVars :: IO (Map String String)
@@ -98,7 +96,5 @@ lookupEnv :: String -> IO (Maybe String)
 lookupEnv k = Map.lookup k <$> environmentVars
 
 toTitle :: String -> String
-toTitle ""     = ""
-toTitle (x:xs) = toUpper x : map toLower xs
-
-
+toTitle "" = ""
+toTitle (x : xs) = toUpper x : map toLower xs
