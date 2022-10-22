@@ -1,10 +1,13 @@
 # lineman
 
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Haskell-CI](https://github.com/willbasky/lineman/actions/workflows/haskell-ci.yml/badge.svg?branch=master)](https://github.com/willbasky/lineman/actions/workflows/haskell-ci.yml)
 
 ## Description
 
-Lineman traverses directory recursively and run command by condition
+Lineman traverses directory recursively and run command by condition.
+
+For example supposed there a many haskell projects with building files (like `.stack-work` or `dist-newstyle`) that take enormous space of disk. It takes time to purge them all manually. The lineman is able to carry out this job automatically. All you need is to configure lineman's config and run it.
 
 ## Installation
 
@@ -27,7 +30,7 @@ or
 
 [Config example in file](./config.toml)
 
-Description of config fields:
+The description of config fields:
 
 ```toml
 
@@ -40,29 +43,29 @@ targetDirectory = "/path/to/directory/for/traversing/"
 [[configElement]]
 
 # Target directory has files
-hasFiles         = ["readme.txt"]
+hasFiles         = ["stack.yaml"]
 
 # Target directory has directories
-hasDirectories   = []
+hasDirectories   = [".stack-work"]
 
 # Target directory has extensions.
 # It consume exts with and without '.'
 hasExtensions    = []
 
 # Command that run in detected directories.
-command          = "rm"
+command          = "stack"
 
 # Command's arguments.
-args             = ["readme.txt"]
+args             = ["purge"]
 
 ```
 
-According to the config `lineman`
+According to the config `lineman`:
 - traverses target directory recursively
-- finds directories that have `readme.txt` file
-- apply `rm readme.txt` in found directories
+- finds directories that have `stack.yaml` file and `.stack-work` directory.
+- apply `stack purge` in the found directories.
 
-Groups of `[[configElement]]` can be unlimited. They run one by one.
+The number of `[[configElement]]` can be unlimited. They run one by one.
 
 ## Environment variables
 
