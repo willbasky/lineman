@@ -3,6 +3,9 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 0.0.7
+
+* Update stack's lts to 20.18
 
 ## 0.0.6
 
