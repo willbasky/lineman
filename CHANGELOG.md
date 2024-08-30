@@ -4,6 +4,10 @@
 The changelog is available [on GitHub][2].
 
 
+## 0.0.7
+
+* Update to lts-21.25 and GHC-9.4.8
+
 ## 0.0.6
 
 * Setup severity with envvar.

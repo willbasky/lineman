@@ -36,7 +36,7 @@ The description of config fields:
 
 # targetDirectory where you plan lineman to run.
 # It is able to consume 'rel', 'abs' and '~'' paths.
-targetDirectory = "/path/to/directory/for/traversing/"
+targetDirectory = "/path/to/directory/for/lineman/traversing/"
 
 # configElement is a group that contains conditions and command with args.
 # The conditions define directories where lineman run.

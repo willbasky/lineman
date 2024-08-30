@@ -1,6 +1,6 @@
 cabal-version:       3.0
 name:                lineman
-version:             0.0.6
+version:             0.0.7
 synopsis:            traverse directory and run command
 description:
     Lineman traverses directory recursively and run command by condition
@@ -17,15 +17,14 @@ build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
 tested-with:
-  GHC == 8.10.7
-  GHC == 9.0.2
+  GHC == 9.4.8
 
 source-repository head
   type:                git
   location:            https://github.com/metaxis/lineman.git
 
 common common-options
-  build-depends:       base >= 4.14 && < 4.16
+  build-depends:       base ^>= 4.17.2.1
 
   ghc-options:         -Wall
                        -Wcompat

@@ -1,37 +1,23 @@
 
+# targetDirectory where you plan lineman to run.
 # targetDirectory consume 'rel', 'abs' and '~'' paths
-targetDirectory = "/path/to/your/directory/where/you/run/lineman/"
+targetDirectory = "/path/to/directory/for/lineman/traversing/"
 
-[[configElement]]
-# Target directory has files
-hasFiles         = ["readme.txt"]
-
-# Target directory has directories
-hasDirectories   = []
-
-# Target directory has extensions.
-# It consume exts with and without '.'
-hasExtensions    = []
-
-# Command to run in searched directories
-command          = "rm"
-
-# Command's arguments
-args             = ["readme.txt"]
-
+# [[configElement]] sections are unlimited
 [[configElement]]
 # Target directory has files
 hasFiles         = []
 
 # Target directory has directories
-hasDirectories   = []
+hasDirectories   = ["dist-newstyle"]
 
 # Target directory has extensions.
 # It consume exts with and without '.'
 hasExtensions    = []
 
 # Command to run in searched directories
-command          = "touch"
+command          = "cabal"
 
 # Command's arguments
-args             = ["readme.txt"]
+args             = ["clean"]
+
