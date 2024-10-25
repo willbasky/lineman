@@ -7,6 +7,7 @@ The changelog is available [on GitHub][2].
 
 * Remove stack configuration
 * Land config on `dhall`
+* Unify source of configs
 
 ## 0.0.7
 

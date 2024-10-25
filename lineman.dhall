@@ -23,12 +23,13 @@ let condition1 : Condition =
 let Severity : Type = < Debug | Info | Warning | Error >
 
 in { cdTarget = "/home/metaxis/source/haskell/tools/lineman/"
-   -- ^ targetDirectory where you plan lineman to run.
+   -- ^ targetDirectory where you plan that the lineman recursively starts from.
    -- targetDirectory consume 'rel', 'abs' and '~'' paths
    , cdConditions = [ condition1 ] : List Condition
+   -- ^ there could be several conditions in the list
    , cdAsync = False
    -- ^ make lineman to work concurrently
-   , cdSeverity = Severity.Error
+   , cdSeverity = Severity.Info
    , cdRichLog = False
    -- ^ Enchance log output
    }
