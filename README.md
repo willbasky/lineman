@@ -16,10 +16,6 @@ For example supposed there a many haskell projects with building files (like `.s
 
 And either
 
-    stack install
-
-or
-
     cabal install
 
 ## Usage

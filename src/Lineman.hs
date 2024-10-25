@@ -5,7 +5,7 @@ module Lineman (
 ) where
 
 import Colog (logDebug, logError, logInfo)
-import Control.Exception (try)
+import Control.Exception.Safe (try)
 import Control.Exception.Base (SomeException)
 import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
@@ -20,7 +20,8 @@ import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, (</>
 import System.Process (createProcess, proc, waitForProcess)
 import System.Process.Extra (showCommandForUser)
 import Text.Pretty.Simple (pPrintString)
-import Types (App, Config, actionMode)
+import Types (App, actionMode)
+import Config (Config)
 import Prelude hiding (log)
 
 launchAction :: Config -> App ()

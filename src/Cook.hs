@@ -24,7 +24,9 @@ import qualified System.Directory as D
 import qualified System.FilePath.Posix as FP
 
 import Control.Monad.IO.Class (liftIO)
-import Types (App, Config (..), ConfigElement (..))
+import Types (App)
+import Config (Config (..), Conditions (..))
+
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -69,7 +71,7 @@ normailzeConfig ::
     ]
 normailzeConfig Config{..} = do
   mTarget <- normilizeDirAbs $ E.trim targetDirectory
-  forM configElement $ \ConfigElement{..} -> do
+  forM conditions $ \Conditions{..} -> do
     mFiles <- sequence <$> traverse normilizeFile (toList hasFiles)
     dirs <- traverse normilizeDirRel $ toList hasDirectories
     let normalizedExt e = if "." == take 1 e then e else '.' : e
