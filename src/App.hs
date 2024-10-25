@@ -5,7 +5,7 @@ module App (
 import Colog (Msg (msgSeverity), filterBySeverity)
 import Colog.Actions (richMessageAction, simpleMessageAction)
 import Colog.Core (Severity (..))
-import Config (getConfig)
+import Config (Config (..), getConfig)
 import Control.Concurrent.Async.Lifted (forConcurrently)
 import Control.Monad (forM, when)
 import Control.Monad.Reader (ReaderT (..))
@@ -32,22 +32,10 @@ appLineman = do
             pPrintString "Launch command with that Config? (yes/no)"
             str <- getLine
             when (str == "yes") $ do
-                rich <- getRichEnv
-                let env1 = if rich then setRichLog defaultEnv else defaultEnv
-
-                threshold <- getSeverityEnv
-                let env2 = setSeverity threshold env1
-
-                asyncMode <- getAsyncEnv
-                let env3 = if asyncMode then setAsyncMode env2 else env2
-
-                pPrintString ""
-                when asyncMode $ pPrintString "[ Async mode ]"
-                when rich $ pPrintString "[ Rich logs ]"
-                pPrintString $ "[ " <> show threshold <> " severity ]"
-                pPrintString ""
-
-                runApp env3 $ launchAction config
+                let env1 = if cRichLog config then setRichLog defaultEnv else defaultEnv
+                let env2 = setSeverity (cSeverity config) env1
+                let env = if (cAsync config) then setAsyncMode env2 else env2
+                runApp env $ launchAction config
 
 runApp :: Env App -> App a -> IO a
 runApp env app = runReaderT (unApp app) env
@@ -70,31 +58,3 @@ defaultEnv =
         { envLogAction = simpleMessageAction
         , actionMode = forM
         }
-
--- Get LINEMAN_SEVERITY envvar
-getSeverityEnv :: IO Severity
-getSeverityEnv = do
-    isDebug <- lookupEnv "LINEMAN_SEVERITY"
-    pure $ fromMaybe Error (readMaybe . toTitle =<< isDebug)
-
-getAsyncEnv :: IO Bool
-getAsyncEnv = do
-    isDebug <- lookupEnv "LINEMAN_ASYNC"
-    pure $ Just True == (readMaybe . toTitle =<< isDebug)
-
-getRichEnv :: IO Bool
-getRichEnv = do
-    isDebug <- lookupEnv "LINEMAN_RICH_LOG"
-    pure $ Just True == (readMaybe . toTitle =<< isDebug)
-
--- Help functions
-
-environmentVars :: IO (Map String String)
-environmentVars = Map.fromList <$> getEnvironment
-
-lookupEnv :: String -> IO (Maybe String)
-lookupEnv k = Map.lookup k <$> environmentVars
-
-toTitle :: String -> String
-toTitle "" = ""
-toTitle (x : xs) = toUpper x : map toLower xs

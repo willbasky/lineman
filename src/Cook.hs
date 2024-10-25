@@ -70,8 +70,8 @@ normailzeConfig ::
       )
     ]
 normailzeConfig Config{..} = do
-  mTarget <- normilizeDirAbs $ E.trim targetDirectory
-  forM conditions $ \Conditions{..} -> do
+  mTarget <- normilizeDirAbs $ E.trim cTarget
+  forM cConditions $ \Conditions{..} -> do
     mFiles <- sequence <$> traverse normilizeFile (toList hasFiles)
     dirs <- traverse normilizeDirRel $ toList hasDirectories
     let normalizedExt e = if "." == take 1 e then e else '.' : e

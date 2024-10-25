@@ -20,7 +20,6 @@ import Control.Exception.Safe (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT (..))
 import Control.Monad.Trans.Control (MonadBaseControl)
-import Data.Set (Set)
 import GHC.IO.Exception (ExitCode (..))
 import Path.Posix (Abs, Dir, Path)
 
