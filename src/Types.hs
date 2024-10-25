@@ -9,8 +9,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Types (
-  Config (..),
-  ConfigElement (..),
   Env (..),
   App (..),
   ActionMode,
@@ -18,11 +16,10 @@ module Types (
 
 import Colog (HasLog (..), LogAction, Message)
 import Control.Monad.Base (MonadBase)
-import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
+import Control.Exception.Safe (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (MonadReader, ReaderT (..))
 import Control.Monad.Trans.Control (MonadBaseControl)
-import Data.Set (Set)
 import GHC.IO.Exception (ExitCode (..))
 import Path.Posix (Abs, Dir, Path)
 
@@ -58,17 +55,4 @@ newtype App a = App
     , MonadBase IO
     )
 
-data Config = Config
-  { targetDirectory :: FilePath
-  , configElement :: [ConfigElement]
-  }
-  deriving stock (Show, Eq)
 
-data ConfigElement = ConfigElement
-  { hasFiles :: Set FilePath
-  , hasDirectories :: Set FilePath
-  , hasExtensions :: Set String
-  , command :: String
-  , args :: [String]
-  }
-  deriving stock (Show, Eq, Ord)
