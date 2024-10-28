@@ -2,7 +2,19 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Log where
+module Log (
+    withLogEnv,
+    mkLogEnv,
+    logInfo,
+    logDebug,
+    logError,
+    logWarn,
+    logInfoS,
+    logDebugS,
+    logErrorS,
+    logWarnS,
+
+) where
 
 import Control.Exception.Safe (bracket)
 import Data.Text (Text)
