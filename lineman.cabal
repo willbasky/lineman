@@ -1,6 +1,6 @@
 cabal-version:   3.0
 name:            lineman
-version:         1.0.0
+version:         1.0.1
 synopsis:        traverse directory and run command
 description:
   Lineman traverses directory recursively and run command by condition
@@ -11,8 +11,8 @@ bug-reports:     https://github.com/metaxis/lineman/issues
 license:         BSD-3-Clause
 license-file:    LICENSE
 author:          Vladislav Sabanov
-maintainer:      Vladislav Sabanov <willgame@mail.ru>
-copyright:       2022 Vladislav Sabanov
+maintainer:      Vladislav Sabanov <willgame at mail dot ru>
+copyright:       2024 Vladislav Sabanov
 category:        Utility
 build-type:      Simple
 extra-doc-files:
