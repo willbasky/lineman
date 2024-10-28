@@ -2,15 +2,16 @@ module App (
     appLineman,
 ) where
 
-import Config (Config (..), getConfig)
 import Cook (safeHead)
 import Lineman (launchAction)
 import Log (mkLogEnv)
-import Types (App (unApp), Env (..))
+import Types (App (unApp), Config (..), Env (..))
 
 import Control.Concurrent.Async.Lifted (forConcurrently)
+import Control.Exception.Safe (throwIO, tryAny)
 import Control.Monad (forM, when)
 import Control.Monad.Reader (ReaderT (..))
+import Dhall (auto, inputFile)
 import System.Environment (getArgs)
 import Text.Pretty.Simple (pPrint, pPrintString)
 
@@ -35,8 +36,19 @@ appLineman = do
                                     else forM
                             , envLogContext = mempty
                             , envLogNamespace = mempty
+                            , envTarget = cTarget config
+                            , envConditions = cConditions config
                             }
-                runApp env $ launchAction config
+                runApp env launchAction
 
 runApp :: Env -> App a -> IO a
 runApp env app = runReaderT (unApp app) env
+
+getConfig :: FilePath -> IO Config
+getConfig path = do
+    eConfig :: Either a Config <- tryAny $ inputFile auto path
+    case eConfig of
+        Left err -> do
+            pPrintString "Config parsing failed"
+            throwIO err
+        Right decoded -> pure decoded

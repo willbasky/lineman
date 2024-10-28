@@ -4,8 +4,7 @@ module Lineman (
     launchAction,
 ) where
 
-import Config (Config)
-import Cook (normailzeConfig)
+import Cook (prepareConditions)
 import Log (logDebug, logError, logInfo)
 import Types (App, Env (..))
 
@@ -24,9 +23,11 @@ import System.Process (createProcess, proc, waitForProcess)
 import System.Process.Extra (showCommandForUser)
 import Prelude hiding (log)
 
-launchAction :: Config -> App ()
-launchAction config = do
-    list <- normailzeConfig config
+launchAction :: App ()
+launchAction = do
+    target <- asks envTarget
+    conditions <- asks envConditions
+    list <- prepareConditions target conditions
     logDebug $ T.pack $ show list
     forM_ list $ \(mTarget, mFiles, dirs, exts, command, args) -> do
         dirsForLaunch <- case (mTarget, mFiles) of

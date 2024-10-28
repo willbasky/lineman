@@ -1,6 +1,6 @@
 module Cook (
     safeHead,
-    normailzeConfig,
+    prepareConditions,
 ) where
 
 import Control.Monad (forM)
@@ -23,9 +23,8 @@ import Path.Posix (
 import qualified System.Directory as D
 import qualified System.FilePath.Posix as FP
 
-import Config (Conditions (..), Config (..))
 import Control.Monad.IO.Class (liftIO)
-import Types (App)
+import Types (App, Conditions (..))
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -57,8 +56,9 @@ normilizeFile path =
                 Rel r -> pure $ Just r
         else pure Nothing
 
-normailzeConfig
-    :: Config
+prepareConditions
+    :: FilePath
+    -> [Conditions]
     -> App
         [ ( Maybe (Path Abs Dir)
           , Maybe [Path Rel File]
@@ -68,9 +68,9 @@ normailzeConfig
           , [String]
           )
         ]
-normailzeConfig Config{..} = do
-    mTarget <- normilizeDirAbs $ E.trim cTarget
-    forM cConditions $ \Conditions{..} -> do
+prepareConditions target conditions = do
+    mTarget <- normilizeDirAbs $ E.trim target
+    forM conditions $ \Conditions{..} -> do
         mFiles <- sequence <$> traverse normilizeFile (toList hasFiles)
         dirs <- traverse normilizeDirRel $ toList hasDirectories
         let normalizedExt e = if "." == take 1 e then e else '.' : e

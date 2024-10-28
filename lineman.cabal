@@ -54,7 +54,6 @@ library
   hs-source-dirs:  src
   exposed-modules:
     App
-    Config
     Cook
     Lineman
     Log
