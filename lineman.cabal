@@ -57,16 +57,16 @@ library
     Config
     Cook
     Lineman
+    Log
     Types
 
   build-depends:
-    , co-log
-    , co-log-core
     , containers
     , dhall
     , directory
     , extra
     , filepath
+    , katip
     , lifted-async
     , monad-control
     , mtl
