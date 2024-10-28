@@ -8,18 +8,16 @@ import Cook (prepareConditions)
 import Log (logDebug, logError, logInfo)
 import Types (App, Env (..))
 
-import Control.Exception.Base (SomeException)
 import Control.Exception.Safe (try)
 import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (asks)
-import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.IO.Exception (ExitCode (..))
 import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur, withCurrentDir)
 import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, (</>))
-import System.Process (createProcess, proc, waitForProcess)
+import System.Process (proc, readCreateProcessWithExitCode)
 import System.Process.Extra (showCommandForUser)
 import Prelude hiding (log)
 
@@ -39,12 +37,11 @@ launchAction = do
             forAction dirsForLaunch $ \d -> do
                 let act = showCommandForUser command args
                 let dir = T.pack (show d)
-                logInfo $ "Action \'" <> T.pack act <> "\' is running at " <> dir
-                withCurrentDir d $ action dir command args
-
+                logInfo $ "Action \'" <> T.pack act <> "\' is running in " <> dir
+                withCurrentDir d $ action command args
         if all (== ExitSuccess) codes
             then logInfo "All actions successfuly finished!"
-            else logInfo "Some action(s) failed"
+            else logError "Some action(s) failed"
 
 getDirsForCommand :: Path Abs Dir -> [Path Rel File] -> [Path Rel Dir] -> [String] -> App [Path Abs Dir]
 getDirsForCommand target files dirs exts = do
@@ -54,23 +51,19 @@ getDirsForCommand target files dirs exts = do
         logDebug $ "findDirsDyFiles: " <> T.pack (show res)
         pure res
 
-action :: Text -> FilePath -> [String] -> App ExitCode
-action dir commandName args = do
-    (stin, stout, sterr, handleProc) <-
-        liftIO $ createProcess $ proc commandName args
-    logDebug $ dir <> " " <> "after proc"
-    E.whenJust stin $ \x -> logDebug $ "stin: " <> T.pack (show x)
-    E.whenJust stout $ \x -> logDebug $ "stout: " <> T.pack (show x)
-    E.whenJust sterr $ \x -> logDebug $ "sterr: " <> T.pack (show x)
-    logDebug $ dir <> " " <> "after when"
-    res <- liftIO $ try $ waitForProcess handleProc
-    case res of
-        Left err -> do
-            logError $ dir <> " " <> T.pack (show @SomeException err)
-            pure $ ExitFailure 1
-        Right r -> do
-            logDebug $ dir <> " " <> T.pack (show r)
-            pure r
+action :: FilePath -> [String] -> App ExitCode
+action commandName args = do
+    (exitCode, stdout, stderr) <-
+        liftIO $
+            readCreateProcessWithExitCode (proc commandName args) ""
+    case stderr of
+        "" -> pure ()
+        err -> logError $ "stderr: " <> T.strip (T.pack err)
+    case stdout of
+        "" -> pure ()
+        out -> logDebug $ "stdout: " <> T.pack out
+    logDebug $ T.pack (show exitCode)
+    pure exitCode
 
 findDirsDyFiles
     :: [Path Abs Dir]
