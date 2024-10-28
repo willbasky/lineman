@@ -2,24 +2,18 @@ module App (
     appLineman,
 ) where
 
-import Colog (Msg (msgSeverity), filterBySeverity)
-import Colog.Actions (richMessageAction, simpleMessageAction)
-import Colog.Core (Severity (..))
-import Config (Config (..), getConfig)
-import Control.Concurrent.Async.Lifted (forConcurrently)
-import Control.Monad (forM, when)
-import Control.Monad.Reader (ReaderT (..))
-import Data.Char (toLower, toUpper)
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
-import System.Environment (getArgs, getEnvironment)
-import Text.Pretty.Simple (pPrint, pPrintString)
-import Text.Read (readMaybe)
-
 import Cook (safeHead)
 import Lineman (launchAction)
-import Types (App (unApp), Env (..))
+import Log (mkLogEnv)
+import Types (App (unApp), Config (..), Env (..))
+
+import Control.Concurrent.Async.Lifted (forConcurrently)
+import Control.Exception.Safe (throwIO, tryAny)
+import Control.Monad (forM, when)
+import Control.Monad.Reader (ReaderT (..))
+import Dhall (auto, inputFile)
+import System.Environment (getArgs)
+import Text.Pretty.Simple (pPrint, pPrintString)
 
 appLineman :: IO ()
 appLineman = do
@@ -32,29 +26,29 @@ appLineman = do
             pPrintString "Launch command with that Config? (yes/no)"
             str <- getLine
             when (str == "yes") $ do
-                let env1 = if cRichLog config then setRichLog defaultEnv else defaultEnv
-                let env2 = setSeverity (cSeverity config) env1
-                let env = if (cAsync config) then setAsyncMode env2 else env2
-                runApp env $ launchAction config
+                logEnv <- mkLogEnv (cVerbosity config) (cSeverity config)
+                let env =
+                        Env
+                            { envLogEnv = logEnv
+                            , envActionMode =
+                                if cAsync config
+                                    then forConcurrently
+                                    else forM
+                            , envLogContext = mempty
+                            , envLogNamespace = mempty
+                            , envTarget = cTarget config
+                            , envConditions = cConditions config
+                            }
+                runApp env launchAction
 
-runApp :: Env App -> App a -> IO a
+runApp :: Env -> App a -> IO a
 runApp env app = runReaderT (unApp app) env
 
-setSeverity :: Severity -> Env App -> Env App
-setSeverity threshold env =
-    env{envLogAction = filterBySeverity threshold msgSeverity $ envLogAction env}
-
-setAsyncMode :: Env App -> Env App
-setAsyncMode env =
-    env{actionMode = forConcurrently}
-
-setRichLog :: Env App -> Env App
-setRichLog env =
-    env{envLogAction = richMessageAction}
-
-defaultEnv :: Env App
-defaultEnv =
-    Env
-        { envLogAction = simpleMessageAction
-        , actionMode = forM
-        }
+getConfig :: FilePath -> IO Config
+getConfig path = do
+    eConfig :: Either a Config <- tryAny $ inputFile auto path
+    case eConfig of
+        Left err -> do
+            pPrintString "Config parsing failed"
+            throwIO err
+        Right decoded -> pure decoded

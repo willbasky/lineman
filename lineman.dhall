@@ -20,16 +20,18 @@ let condition1 : Condition =
   -- ^ Command's arguments
   }
 
-let Severity : Type = < Debug | Info | Warning | Error >
+let Verbosity : Type = < V0 | V1 | V2 | V3 >
+-- ^ levels of verbosity
+let Severity : Type =
+      < DebugS | InfoS | NoticeS | WarningS | ErrorS | CriticalS | AlertS | EmergencyS >
 
-in { cdTarget = "/home/metaxis/source/haskell/tools/lineman/"
-   -- ^ targetDirectory where you plan that the lineman recursively starts from.
-   -- targetDirectory consume 'rel', 'abs' and '~'' paths
-   , cdConditions = [ condition1 ] : List Condition
-   -- ^ there could be several conditions in the list
-   , cdAsync = False
+in { cTarget = "/home/metaxis/source/haskell/tools/lineman/"
+   -- ^ target where you plan that the lineman recursively starts from.
+   -- target consume 'rel', 'abs' and '~'' paths
+   , cConditions = [ condition1 ] : List Condition
+   -- ^ within the target one can run several commands with its own conditions 
+   , cAsync = False
    -- ^ make lineman to work concurrently
-   , cdSeverity = Severity.Info
-   , cdRichLog = False
-   -- ^ Enchance log output
+   , cSeverity = Severity.InfoS
+   , cVerbosity = Verbosity.V0
    }

@@ -19,6 +19,7 @@ cabal-dev
 cabal.sandbox.config
 cabal.config
 cabal.project.local
+cabal-plan.log
 .ghc.environment.*
 .HTF/
 .hie/
