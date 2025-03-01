@@ -3,6 +3,10 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 1.0.2
+
+* Fix output
+
 ## 1.0.1
 
 * Swap `colog` with `katip`

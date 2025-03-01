@@ -53,15 +53,15 @@ getDirsForCommand target files dirs exts = do
 
 action :: FilePath -> [String] -> App ExitCode
 action commandName args = do
-    (exitCode, stdout, stderr) <-
+    (exitCode, stdout, stderr) <- 
         liftIO $
             readCreateProcessWithExitCode (proc commandName args) ""
     case stderr of
         "" -> pure ()
-        err -> logError $ "stderr: " <> T.strip (T.pack err)
+        err -> logError $ "stderr: \n" <> T.strip (T.pack err)
     case stdout of
         "" -> pure ()
-        out -> logDebug $ "stdout: " <> T.pack out
+        out -> logDebug $ "stdout: \n" <> T.pack out
     logDebug $ T.pack (show exitCode)
     pure exitCode
 
