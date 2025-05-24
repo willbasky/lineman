@@ -73,7 +73,7 @@ library
     , path-io
     , pretty-simple
     , process
-    , safe-exceptions
+    , exceptions
     , text
     , transformers-base
 

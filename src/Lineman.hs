@@ -8,7 +8,7 @@ import Cook (prepareConditions)
 import Log (logDebug, logError, logInfo)
 import Types (App, Env (..))
 
-import Control.Exception.Safe (try)
+import Control.Exception (try)
 import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)

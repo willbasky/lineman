@@ -21,7 +21,7 @@ module Types (
     ActionMode,
 ) where
 
-import Control.Exception.Safe (MonadCatch, MonadMask, MonadThrow)
+import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Base (MonadBase)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (

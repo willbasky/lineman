@@ -16,7 +16,7 @@ module Log (
 
 ) where
 
-import Control.Exception.Safe (bracket)
+import Control.Exception (bracket)
 import Data.Text (Text)
 import Data.Text.Lazy.Builder (fromString, fromText)
 import Katip
