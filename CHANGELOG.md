@@ -3,6 +3,11 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 1.0.3
+
+* Add justfile
+* Update ci config
+
 ## 1.0.2
 
 * Fix output
