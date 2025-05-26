@@ -5,7 +5,8 @@ module App (
 import Cook (safeHead)
 import Lineman (launchAction)
 import Log (mkLogEnv)
-import Types (App (unApp), Config (..), Env (..), forConcurrentlyKi)
+import Types (App (unApp), Config (..), Env (..))
+import Concurrent (forConcurrentlyKi)
 
 -- import Control.Concurrent.Async.Lifted (forConcurrently)
 import Control.Exception.Safe (throwIO, tryAny)

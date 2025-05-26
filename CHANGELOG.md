@@ -7,6 +7,7 @@ The changelog is available [on GitHub][2].
 
 * Add justfile
 * Update ci config
+* Land concurrent action on `Ki`
 
 ## 1.0.2
 
