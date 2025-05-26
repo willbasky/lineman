@@ -1,24 +1,27 @@
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Lineman (
     launchAction,
-) where
+)
+where
 
-import Cook (prepareConditions)
-import Log (logDebug, logError, logInfo)
-import Types (App, Env (..))
-
+-- import Control.Concurrent (threadDelay)
 import Control.Exception.Safe (try)
 import Control.Monad (forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (asks)
+import Cook (prepareConditions)
 import qualified Data.Text as T
 import GHC.IO.Exception (ExitCode (..))
-import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur, withCurrentDir)
-import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, (</>))
-import System.Process (proc, readCreateProcessWithExitCode)
+import Log (logDebug, logError, logInfo)
+import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur)
+import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, toFilePath, (</>))
+import System.Process (CreateProcess (..), proc, readCreateProcessWithExitCode)
 import System.Process.Extra (showCommandForUser)
+import Types (App, Env (..))
 import Prelude hiding (log)
 
 launchAction :: App ()
@@ -31,14 +34,14 @@ launchAction = do
         dirsForLaunch <- case (mTarget, mFiles) of
             (Just t, Just fs) -> getDirsForCommand t fs dirs exts
             _ -> pure []
-        logDebug $ T.pack $ show dirsForLaunch
+        logDebug $ "Directories for running action: " <> T.pack (show dirsForLaunch)
         forAction <- asks envActionMode
         codes <- seq dirsForLaunch $
             forAction dirsForLaunch $ \d -> do
                 let act = showCommandForUser command args
                 let dir = T.pack (show d)
                 logInfo $ "Action \'" <> T.pack act <> "\' is running in " <> dir
-                withCurrentDir d $ action command args
+                action command args d
         if all (== ExitSuccess) codes
             then logInfo "All actions successfuly finished!"
             else logError "Some action(s) failed"
@@ -48,20 +51,21 @@ getDirsForCommand target files dirs exts = do
     (targets, _) <- listDirRecur target
     seq targets $ do
         res <- findDirsDyFiles (target : targets) files dirs exts
-        logDebug $ "findDirsDyFiles: " <> T.pack (show res)
+        logDebug $ "Found directories: " <> T.pack (show res)
         pure res
 
-action :: FilePath -> [String] -> App ExitCode
-action commandName args = do
-    (exitCode, stdout, stderr) <- 
+action :: FilePath -> [String] -> Path Abs Dir -> App ExitCode
+action commandName args path = do
+    -- liftIO $ threadDelay 500_000 -- 0.5 seconds
+    (exitCode, stdout, stderr) <-
         liftIO $
-            readCreateProcessWithExitCode (proc commandName args) ""
+            readCreateProcessWithExitCode (proc commandName args){cwd = Just $ toFilePath path} ""
     case stderr of
         "" -> pure ()
-        err -> logError $ "stderr: \n" <> T.strip (T.pack err)
+        err -> logError $ "In " <> T.pack (show path) <> " occurred stderr: \n" <> T.strip (T.pack err)
     case stdout of
         "" -> pure ()
-        out -> logDebug $ "stdout: \n" <> T.pack out
+        out -> logDebug $ "In " <> T.pack (show path) <> " occurred stdout: \n" <> T.pack out
     logDebug $ T.pack (show exitCode)
     pure exitCode
 
@@ -81,9 +85,9 @@ findDirsDyFiles d [] [] [] = pure d
 findDirsDyFiles (d : ds) files dirs exts = do
     dFiles <- snd <$> listDir d
     existFiles <- E.allM (\f -> doesFileExist $ d </> f) files
-    logDebug $ T.pack (show d)
-    logDebug $ T.pack (show files)
-    logDebug $ T.pack (show existFiles)
+    logDebug $ "In directory: " <> T.pack (show d)
+    logDebug $ "file(s) " <> T.pack (show files)
+    logDebug $ "exist? " <> T.pack (show existFiles)
     existDirs <- E.allM (\f -> doesDirExist $ d </> f) dirs
     existExts <- isExtsInFiles exts dFiles
     if existFiles && existDirs && existExts

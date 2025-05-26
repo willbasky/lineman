@@ -6,8 +6,9 @@ import Cook (safeHead)
 import Lineman (launchAction)
 import Log (mkLogEnv)
 import Types (App (unApp), Config (..), Env (..))
+import Concurrent (forConcurrentlyKi)
 
-import Control.Concurrent.Async.Lifted (forConcurrently)
+-- import Control.Concurrent.Async.Lifted (forConcurrently)
 import Control.Exception.Safe (throwIO, tryAny)
 import Control.Monad (forM, when)
 import Control.Monad.Reader (ReaderT (..))
@@ -32,7 +33,7 @@ appLineman = do
                             { envLogEnv = logEnv
                             , envActionMode =
                                 if cAsync config
-                                    then forConcurrently
+                                    then forConcurrentlyKi
                                     else forM
                             , envLogContext = mempty
                             , envLogNamespace = mempty
@@ -52,3 +53,4 @@ getConfig path = do
             pPrintString "Config parsing failed"
             throwIO err
         Right decoded -> pure decoded
+

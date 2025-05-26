@@ -6,10 +6,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE StrictData #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -38,6 +38,7 @@ import GHC.IO.Exception (ExitCode (..))
 import Katip (Katip (..), KatipContext (..), LogContexts, LogEnv (..), Namespace, Severity, Verbosity)
 import Path.Posix (Abs, Dir, Path)
 
+
 newtype App a = MkApp
     { unApp :: ReaderT Env IO a
     }
@@ -56,15 +57,21 @@ newtype App a = MkApp
         )
 
 instance Katip App where
+    getLogEnv :: App LogEnv
     getLogEnv = asks envLogEnv
+    localLogEnv :: (LogEnv -> LogEnv) -> App a -> App a
     localLogEnv f (MkApp m) =
         MkApp (local (\s -> s{envLogEnv = f (envLogEnv s)}) m)
 
 instance KatipContext App where
+    getKatipContext :: App LogContexts
     getKatipContext = asks envLogContext
+    localKatipContext :: (LogContexts -> LogContexts) -> App a -> App a
     localKatipContext f (MkApp m) =
         MkApp (local (\s -> s{envLogContext = f (envLogContext s)}) m)
+    getKatipNamespace :: App Namespace
     getKatipNamespace = asks envLogNamespace
+    localKatipNamespace :: (Namespace -> Namespace) -> App a -> App a
     localKatipNamespace f (MkApp m) =
         MkApp (local (\s -> s{envLogNamespace = f (envLogNamespace s)}) m)
 

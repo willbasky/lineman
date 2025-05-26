@@ -1,6 +1,6 @@
 cabal-version:   3.0
 name:            lineman
-version:         1.0.2
+version:         1.0.3
 synopsis:        traverse directory and run command
 description:
   Lineman traverses directory recursively and run command by condition
@@ -55,6 +55,7 @@ library
   exposed-modules:
     App
     Cook
+    Concurrent
     Lineman
     Log
     Types
@@ -66,7 +67,7 @@ library
     , extra
     , filepath
     , katip
-    , lifted-async
+    , ki
     , monad-control
     , mtl
     , path
@@ -74,6 +75,7 @@ library
     , pretty-simple
     , process
     , safe-exceptions
+    , stm
     , text
     , transformers-base
 
