@@ -66,7 +66,7 @@ library
     , extra
     , filepath
     , katip
-    , lifted-async
+    , ki
     , monad-control
     , mtl
     , path
@@ -74,6 +74,7 @@ library
     , pretty-simple
     , process
     , safe-exceptions
+    , stm
     , text
     , transformers-base
 
