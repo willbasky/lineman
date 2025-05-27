@@ -15,13 +15,13 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (asks)
 import Cook (prepareConditions)
 import qualified Data.Text as T
-import GHC.IO.Exception (ExitCode (..))
 import Log (logDebug, logError, logInfo)
 import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur)
 import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, toFilePath, (</>))
-import System.Process (CreateProcess (..), proc, readCreateProcessWithExitCode)
 import System.Process.Extra (showCommandForUser)
+import System.Process.Typed
 import Types (App, Env (..))
+import Witch
 import Prelude hiding (log)
 
 launchAction :: App ()
@@ -57,15 +57,23 @@ getDirsForCommand target files dirs exts = do
 action :: FilePath -> [String] -> Path Abs Dir -> App ExitCode
 action commandName args path = do
     -- liftIO $ threadDelay 500_000 -- 0.5 seconds
+    let dateConfig :: ProcessConfig () () ()
+        dateConfig = setWorkingDir (toFilePath path) $ proc commandName args
     (exitCode, stdout, stderr) <-
         liftIO $
-            readCreateProcessWithExitCode (proc commandName args){cwd = Just $ toFilePath path} ""
+            readProcess dateConfig
     case stderr of
         "" -> pure ()
-        err -> logError $ "In " <> T.pack (show path) <> " occurred stderr: \n" <> T.strip (T.pack err)
+        err -> logError $ "In " 
+            <> T.pack (show path) 
+            <> " occurred stderr: \n" 
+            <> T.strip (unsafeInto @T.Text $ into @Utf8L err)
     case stdout of
         "" -> pure ()
-        out -> logDebug $ "In " <> T.pack (show path) <> " occurred stdout: \n" <> T.pack out
+        out -> logDebug $ "In " 
+            <> T.pack (show path) 
+            <> " occurred stdout: \n" 
+            <> unsafeInto @T.Text (into @Utf8L out)
     logDebug $ T.pack (show exitCode)
     pure exitCode
 

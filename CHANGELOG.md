@@ -3,6 +3,10 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 1.0.4
+
+* Land on `typed-base`
+
 ## 1.0.3
 
 * Add justfile

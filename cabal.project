@@ -1,4 +1,1 @@
 packages: .
-
-constraints:
-  http-client-tls == 0.3.6.3
