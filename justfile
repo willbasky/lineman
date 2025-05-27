@@ -1,4 +1,4 @@
-GHC_VERSION := "9.4.8"
+GHC_VERSION := "9.8.4"
 
 # prepare the environment for the project
 prepare: 

@@ -28,9 +28,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - compiler: ghc-9.4.8
+          - compiler: ghc-9.8.4
             compilerKind: ghc
-            compilerVersion: 9.4.8
+            compilerVersion: 9.8.4
             setup-method: ghcup
             allow-failure: false
       fail-fast: false
@@ -150,7 +150,6 @@ jobs:
           echo "package lineman" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
-          constraints: http-client-tls == 0.3.6.3
           EOF
           $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: any.$_ installed\n" unless /^(lineman)$/; }' >> cabal.project.local
           cat cabal.project
