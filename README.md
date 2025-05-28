@@ -26,8 +26,22 @@ And either
 
 Lineman uses [dhall](https://dhall-lang.org) configuration. See [Config](./lineman.dhall) example.
 
-According to the config `lineman`:
-- traverses target directory recursively. 
-- finds directories that have `lineman.cabal` file.
-- apply `mkdir test_dir` in the found directories.
+## Term policy
+
+- `Action` - a single command that run in a directory due to particular `conditions`
+- `Conditions` describe the directory has to have to run `action`
+- `EntryPoint` is a parent directory where `lineman` starts seeking for `targets`
+- `Target` is a directory that aligns to `condition` 
+- `Swarm` is a bunch of `actions` that match to `condition`
+- `Hive` is a collection of `swarms`
+
+## Features 
+
+- Both `actions` in a `swarm` and `swarms` in a `hive` can be run concurrently or successively 
+- Both `actions` and `swarms` can be interspersed with breaks
+- `Lineman` starts seeking `targets` from `entryPoint` recursively and finds directories that have particular subdirectories, files or extensions. And then it run `Action` in found `targets`. 
+
+## Use cases
+
+- Clear build artefact in bunch of projects. 
 

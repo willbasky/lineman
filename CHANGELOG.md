@@ -3,6 +3,16 @@
 `lineman` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 1.0.5
+
+* Restructure modules
+* Differ raw and domain types
+* Add option for swarm concurrency
+* Prevent processing of invalid paths and absent targets
+* Add delay option to config
+* Use clear namings
+* Update README
+
 ## 1.0.4
 
 * Land on `typed-base`

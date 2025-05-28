@@ -1,37 +1,72 @@
-let Condition : Type =
-  { hasFiles : List Text
-  , hasDirectories : List Text
-  , hasExtensions : List Text
-  , command : Text
-  , args : List Text
+let RawCondition : Type =
+  { rcIndex : Natural
+  -- Arbitrary index
+  , rcEntryPoint : Text
+   -- ^ first target where lineman starts recursively from.
+   -- target consume 'rel', 'abs' and '~'' paths
+  , rcHasFiles : List Text
+  -- ^ Target directory has files that have to be relative to target path.
+  , rcHasDirectories : List Text
+  -- ^ Target directory has directories that have to be relative to target path
+  , rcHasExtensions : List Text
+  -- ^ Target directory has files with these extensions.
+  -- It consume exts with and without '.'
+  , rcCommand : Text
+  -- ^ Command to run in searched directories
+  , rcArgs : List Text
+  -- ^ Command's arguments
+  , rcConcurrentAgents : Bool
+  -- ^ run actions concurrently within the particular condition
+  , rcBreakBetweenAgents : Double
+  -- ^ Interval between actions in seconds
   }
 
-let condition1 : Condition = 
-  { hasFiles = ["stack.yaml"] : List Text 
-  -- ^ Target directory has files
-  , hasDirectories = [".exercism"] : List Text
-  -- ^ Target directory has directories
-  , hasExtensions = [] : List Text
-  -- ^ Target directory has extensions.
-  -- It consume exts with and without '.'
-  , command = "ls"
-  -- ^ Command to run in searched directories
-  , args = [] : List Text
-  -- ^ Command's arguments
+let condition_1 : RawCondition = 
+  { rcIndex = 1
+  , rcEntryPoint = "~/source/test/"  
+  , rcHasFiles = ["a/log"] : List Text
+  , rcHasDirectories = [] : List Text
+  , rcHasExtensions = [] : List Text
+  , rcCommand = "touch"
+  , rcArgs = ["readme.txt"] : List Text
+  , rcConcurrentAgents = False
+  , rcBreakBetweenAgents = 1.0
+  }
+
+let condition_2 : RawCondition = 
+  { rcIndex = 2
+  , rcEntryPoint = "~/source/test/"  
+  , rcHasFiles = ["a/log"] : List Text
+  , rcHasDirectories = [] : List Text
+  , rcHasExtensions = [] : List Text
+  , rcCommand = "rm"
+  , rcArgs = ["readme.txt"] : List Text
+  , rcConcurrentAgents = False
+  , rcBreakBetweenAgents = 1.0
   }
 
 let Verbosity : Type = < V0 | V1 | V2 | V3 >
--- ^ levels of verbosity
 let Severity : Type =
       < DebugS | InfoS | NoticeS | WarningS | ErrorS | CriticalS | AlertS | EmergencyS >
 
-in { cTarget = "your/path"
-   -- ^ target where you plan that the lineman recursively starts from.
-   -- target consume 'rel', 'abs' and '~'' paths
-   , cConditions = [ condition1 ] : List Condition
-   -- ^ within the target one can run several commands with its own conditions 
-   , cAsync = False
-   -- ^ make lineman to work concurrently
-   , cSeverity = Severity.DebugS
-   , cVerbosity = Verbosity.V0
+let Config : Type = 
+  { confRawConditions : List RawCondition
+   -- ^ within the target it is possible to run several commands with own conditions 
+   , confSeverity : Severity
+   , confVerbosity : Verbosity
+-- ^ level of verbosity
+   , confConcurrentSwarms : Bool
+  -- ^ run the swarm of actions concurrently
+   , confBreakBetweenSwarms : Double
+  -- ^ add delay of running next batch of actions (in seconds)
    }
+
+let config : Config = 
+  { confRawConditions = [ condition_1, condition_2 ] : List RawCondition
+   , confSeverity = Severity.DebugS
+   , confVerbosity = Verbosity.V0
+   , confConcurrentSwarms = False
+   , confBreakBetweenSwarms = 5.0
+   }
+
+in config

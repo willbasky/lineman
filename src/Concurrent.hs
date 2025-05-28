@@ -4,6 +4,7 @@
 
 module Concurrent (
     forConcurrentlyKi,
+    forConcurrentlyKi_,
 ) where
 
 import Control.Concurrent.STM (atomically)
@@ -13,13 +14,22 @@ import Control.Monad.Trans.Control (MonadBaseControl, StM, control)
 import Ki
 
 forConcurrentlyKi
-    :: (MonadBaseControl IO m, StM m (Ki.Thread b) ~ Ki.Thread b, StM m b ~ b, MonadIO m)
-    => [a]
+    :: (Traversable t, MonadBaseControl IO m, StM m (Ki.Thread b) ~ Ki.Thread b, StM m b ~ b, MonadIO m)
+    => t a
     -> (a -> m b)
-    -> m [b]
+    -> m (t b)
 forConcurrentlyKi ns f = control $ \unlift -> scopedM \scope -> unlift $ do
     threads <- mapM (forkM scope . f) ns
     mapM (liftBase . atomically . Ki.await) threads
+
+forConcurrentlyKi_
+    :: (Traversable t, MonadBaseControl IO m, StM m (Ki.Thread b) ~ Ki.Thread b, StM m b ~ b, MonadIO m)
+    => t a
+    -> (a -> m b)
+    -> m ()
+forConcurrentlyKi_ ns f = control $ \unlift -> scopedM \scope -> unlift $ do
+    threads <- mapM (forkM scope . f) ns
+    mapM_ (liftBase . atomically . Ki.await) threads
 
 forkM
     :: (MonadBaseControl IO m, StM m (Ki.Thread a) ~ Ki.Thread a, StM m a ~ a)

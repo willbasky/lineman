@@ -12,6 +12,9 @@ install:
 build: 
     cabal build
 
+run: 
+    cabal run lineman -- ./lineman.dhall
+
 # update the bounds of dependencies
 update:
     cabal-bounds update
