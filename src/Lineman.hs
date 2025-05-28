@@ -7,13 +7,15 @@ module Lineman (
 )
 where
 
+import Concurrent (forConcurrentlyKi, forConcurrentlyKi_)
+import Type.Domain (App, Condition (..), Env (..))
+
 -- import Control.Concurrent (threadDelay)
 import Control.Exception.Safe (try)
-import Control.Monad (forM_)
+import Control.Monad (forM, forM_)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (asks)
-import Cook (prepareConditions)
+import Control.Monad.Reader (ask)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Log (logDebug, logError, logInfo)
@@ -21,28 +23,27 @@ import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur)
 import Path.Posix (Abs, Dir, File, Path, PathException, Rel, fileExtension, toFilePath, (</>))
 import System.Process.Extra (showCommandForUser)
 import System.Process.Typed
-import Types (App, Env (..))
 import Witch
 import Prelude hiding (log)
 
 launchAction :: App ()
 launchAction = do
-    target <- asks envTarget
-    conditions <- asks envConditions
-    list <- prepareConditions target conditions
-    logDebug $ into @Text $ show list
-    forM_ list $ \(mTarget, mFiles, dirs, exts, command, args) -> do
-        dirsForLaunch <- case (mTarget, mFiles) of
-            (Just t, Just fs) -> getDirsForCommand t fs dirs exts
+    env <- ask
+    let conditions = envConditions env
+    logDebug $ "Conditions: " <> into @Text (show conditions)
+    let forSwarm = if envSwarmConcurrent env then forConcurrentlyKi_ else forM_
+    forSwarm conditions $ \Condition{..} -> do
+        dirsForLaunch <- case (cTarget, cFiles) of
+            (Just target, Just files) -> getDirsForCommand target files cDirectories cExtensions
             _ -> pure []
         logDebug $ "Directories for running action: " <> into @Text (show dirsForLaunch)
-        forAction <- asks envActionMode
+        let forAction = if cActConcurrent then forConcurrentlyKi else forM
         codes <- seq dirsForLaunch $
             forAction dirsForLaunch $ \d -> do
-                let act = showCommandForUser command args
+                let act = showCommandForUser cCommand cArguments
                 let dir = into @Text (show d)
                 logInfo $ "Action \'" <> into @Text act <> "\' is running in " <> dir
-                action command args d
+                action cCommand cArguments d
         if all (== ExitSuccess) codes
             then logInfo "All actions successfuly finished!"
             else logError "Some action(s) failed"
@@ -73,7 +74,7 @@ action commandName args path = do
         err ->
             logError $
                 "In "
-                    <> into @Text (show path)
+                    <> into @Text (toFilePath path)
                     <> " occurred stderr: \n"
                     <> T.strip (unsafeInto @Text $ into @Utf8L err)
     case stdout of
@@ -81,7 +82,7 @@ action commandName args path = do
         out ->
             logDebug $
                 "In "
-                    <> into @Text (show path)
+                    <> into @Text (toFilePath path)
                     <> " occurred stdout: \n"
                     <> unsafeInto @Text (into @Utf8L out)
     logDebug $ into @Text (show exitCode)
@@ -103,7 +104,7 @@ findDirsDyFiles d [] [] [] = pure d
 findDirsDyFiles (d : ds) files dirs exts = do
     dFiles <- snd <$> listDir d
     existFiles <- E.allM (\f -> doesFileExist $ d </> f) files
-    logDebug $ "In directory: " <> into @Text (show d)
+    logDebug $ "In directory: " <> into @Text (toFilePath d)
     logDebug $ "file(s) " <> into @Text (show files)
     logDebug $ "exist? " <> into @Text (show existFiles)
     existDirs <- E.allM (\f -> doesDirExist $ d </> f) dirs

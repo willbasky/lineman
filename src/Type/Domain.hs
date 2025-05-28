@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -7,18 +6,13 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE StrictData #-}
-{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Types (
+module Type.Domain (
     App (..),
     Env (..),
-    Conditions (..),
-    Config (..),
-    ActionMode,
+    Condition (..),
 ) where
 
 import Control.Exception.Safe (MonadCatch, MonadMask, MonadThrow)
@@ -31,13 +25,9 @@ import Control.Monad.Reader (
     local,
  )
 import Control.Monad.Trans.Control (MonadBaseControl)
-import Data.Set (Set)
-import Dhall (FromDhall (..))
-import GHC.Generics (Generic)
-import GHC.IO.Exception (ExitCode (..))
-import Katip (Katip (..), KatipContext (..), LogContexts, LogEnv (..), Namespace, Severity, Verbosity)
+import Katip (Katip (..), KatipContext (..), LogContexts, LogEnv (..), Namespace)
+import Path (File, Rel)
 import Path.Posix (Abs, Dir, Path)
-
 
 newtype App a = MkApp
     { unApp :: ReaderT Env IO a
@@ -75,36 +65,25 @@ instance KatipContext App where
     localKatipNamespace f (MkApp m) =
         MkApp (local (\s -> s{envLogNamespace = f (envLogNamespace s)}) m)
 
-type ActionMode = [Path Abs Dir] -> (Path Abs Dir -> App ExitCode) -> App [ExitCode]
+-- type ActionMode = [Path Abs Dir] -> (Path Abs Dir -> App ExitCode) -> App [ExitCode]
 
 data Env = Env
     { envLogEnv :: LogEnv
-    , envActionMode :: ActionMode
     , envLogContext :: LogContexts
     , envLogNamespace :: Namespace
-    , envTarget :: FilePath
-    , envConditions :: [Conditions]
+    , envConditions :: [Condition]
+    , envSwarmConcurrent :: Bool
     }
 
-data Config = Config
-    { cTarget :: FilePath
-    , cConditions :: [Conditions]
-    , cAsync :: Bool
-    , cSeverity :: Severity
-    , cVerbosity :: Verbosity
+data Condition = Condition
+    { cIndex :: Word
+    , cTarget :: Maybe (Path Abs Dir)
+    , cFiles :: Maybe [Path Rel File]
+    , cDirectories :: [Path Rel Dir]
+    , cExtensions :: [String]
+    , cCommand :: String
+    , cArguments :: [String]
+    , cActConcurrent :: Bool
+    , cWithBreak :: Word
     }
-    deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromDhall)
-
-deriving anyclass instance FromDhall Verbosity
-deriving anyclass instance FromDhall Severity
-
-data Conditions = Conditions
-    { hasFiles :: Set FilePath
-    , hasDirectories :: Set FilePath
-    , hasExtensions :: Set String
-    , command :: String
-    , args :: [String]
-    }
-    deriving stock (Eq, Show, Generic, Ord)
-    deriving anyclass (FromDhall)
+    deriving stock (Show, Eq)
