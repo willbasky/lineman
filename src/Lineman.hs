@@ -1,22 +1,23 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Lineman (
-    launchAction,
+    launchSwarm,
 )
 where
 
 import Concurrent (forConcurrentlyKi, forConcurrentlyKi_)
 import Type.Domain (App, Condition (..), Env (..))
 
--- import Control.Concurrent (threadDelay)
 import Control.Exception.Safe (try)
-import Control.Monad (forM, forM_)
+import Control.Monad (forM, forM_, when)
 import qualified Control.Monad.Extra as E
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
 import Data.Text (Text)
+import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Text as T
 import Log (logDebug, logError, logInfo)
 import Path.IO (doesDirExist, doesFileExist, listDir, listDirRecur)
@@ -25,21 +26,26 @@ import System.Process.Extra (showCommandForUser)
 import System.Process.Typed
 import Witch
 import Prelude hiding (log)
+import System.Time.Extra (sleep)
+-- import Data.List (uncons)
 
-launchAction :: App ()
-launchAction = do
+launchSwarm :: App ()
+launchSwarm = do
     env <- ask
     let conditions = envConditions env
     logDebug $ "Conditions: " <> into @Text (show conditions)
     let forSwarm = if envSwarmConcurrent env then forConcurrentlyKi_ else forM_
+    let firstIndex = cIndex $ NonEmpty.head conditions
     forSwarm conditions $ \Condition{..} -> do
+        when (cIndex /= firstIndex) $ liftIO $ sleep $ envSwarmBreak env
         dirsForLaunch <- case (cTarget, cFiles) of
             (Just target, Just files) -> getDirsForCommand target files cDirectories cExtensions
             _ -> pure []
         logDebug $ "Directories for running action: " <> into @Text (show dirsForLaunch)
         let forAction = if cActConcurrent then forConcurrentlyKi else forM
-        codes <- seq dirsForLaunch $
-            forAction dirsForLaunch $ \d -> do
+        let firstDirectory = seq dirsForLaunch $ head dirsForLaunch
+        codes <- forAction dirsForLaunch $ \d -> do
+                when (d /= firstDirectory) $ liftIO $ sleep cWithBreak
                 let act = showCommandForUser cCommand cArguments
                 let dir = into @Text (show d)
                 logInfo $ "Action \'" <> into @Text act <> "\' is running in " <> dir
@@ -47,6 +53,7 @@ launchAction = do
         if all (== ExitSuccess) codes
             then logInfo "All actions successfuly finished!"
             else logError "Some action(s) failed"
+        
 
 getDirsForCommand
     :: Path Abs Dir

@@ -24,7 +24,7 @@ data RawCondition = RawCondition
     , rcCommand :: String
     , rcArgs :: [String]
     , rcActConcurrent :: Bool
-    , rcWithBreak :: Word
+    , rcWithBreak :: Double
     }
     deriving stock (Eq, Show, Generic, Ord)
     deriving anyclass (FromDhall)
@@ -34,6 +34,7 @@ data Config = Config
     , confSeverity :: Severity
     , confVerbosity :: Verbosity
     , confSwarmConcurrent :: Bool
+    , confSwarmBreak :: Double
     }
     deriving stock (Eq, Show, Generic)
     deriving anyclass (FromDhall)

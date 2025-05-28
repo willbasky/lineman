@@ -2,7 +2,7 @@ module App (
     appLineman,
 ) where
 
-import Lineman (launchAction)
+import Lineman (launchSwarm)
 import Log (mkLogEnv)
 import Parser (prepareConditions, safeHead)
 import Type.Domain (App (unApp), Env (..))
@@ -26,17 +26,21 @@ appLineman = do
             pPrintString "Launch command with that Config? (yes/no)"
             str <- getLine
             when (str == "yes") $ do
-                conditions <- prepareConditions $ confRawConditions config
-                logEnv <- mkLogEnv (confVerbosity config) (confSeverity config)
-                let env =
-                        Env
-                            { envLogEnv = logEnv
-                            , envLogContext = mempty
-                            , envLogNamespace = mempty
-                            , envConditions = conditions
-                            , envSwarmConcurrent = confSwarmConcurrent config
-                            }
-                runApp env launchAction
+                mConditions <- prepareConditions $ confRawConditions config
+                case mConditions of 
+                    Nothing -> pPrintString "No conditions found in config file for running lineman"
+                    Just conditions -> do 
+                        logEnv <- mkLogEnv (confVerbosity config) (confSeverity config)
+                        let env =
+                                Env
+                                    { envLogEnv = logEnv
+                                    , envLogContext = mempty
+                                    , envLogNamespace = mempty
+                                    , envConditions = conditions
+                                    , envSwarmConcurrent = confSwarmConcurrent config
+                                    , envSwarmBreak = confSwarmBreak config
+                                    }
+                        runApp env launchSwarm
 
 runApp :: Env -> App a -> IO a
 runApp env app = runReaderT (unApp app) env

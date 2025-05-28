@@ -28,6 +28,7 @@ import Control.Monad.Trans.Control (MonadBaseControl)
 import Katip (Katip (..), KatipContext (..), LogContexts, LogEnv (..), Namespace)
 import Path (File, Rel)
 import Path.Posix (Abs, Dir, Path)
+import Data.List.NonEmpty (NonEmpty)
 
 newtype App a = MkApp
     { unApp :: ReaderT Env IO a
@@ -71,8 +72,9 @@ data Env = Env
     { envLogEnv :: LogEnv
     , envLogContext :: LogContexts
     , envLogNamespace :: Namespace
-    , envConditions :: [Condition]
+    , envConditions :: NonEmpty Condition
     , envSwarmConcurrent :: Bool
+    , envSwarmBreak :: Double
     }
 
 data Condition = Condition
@@ -84,6 +86,6 @@ data Condition = Condition
     , cCommand :: String
     , cArguments :: [String]
     , cActConcurrent :: Bool
-    , cWithBreak :: Word
+    , cWithBreak :: Double
     }
     deriving stock (Show, Eq)

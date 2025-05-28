@@ -25,6 +25,7 @@ import Path.Posix (
  )
 import qualified System.Directory as D
 import qualified System.FilePath.Posix as FP
+import Data.List.NonEmpty (NonEmpty, nonEmpty)
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -55,9 +56,9 @@ normalizeFile path =
 
 prepareConditions
     :: [RawCondition]
-    -> IO [Condition]
+    -> IO (Maybe (NonEmpty Condition))
 prepareConditions raw = do
-    forM raw $ \RawCondition{..} -> do
+    conditions <- forM raw $ \RawCondition{..} -> do
         mTarget <- normalizeDirAbs $ E.trim rcTarget
         mFiles <- sequence <$> traverse normalizeFile (toList rcHasFiles)
         dirs <- traverse parseRelDir $ toList rcHasDirectories
@@ -74,3 +75,4 @@ prepareConditions raw = do
             cActConcurrent = rcActConcurrent,
             cWithBreak = rcWithBreak
         }
+    pure $ nonEmpty conditions
