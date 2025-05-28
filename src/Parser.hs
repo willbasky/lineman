@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Parser (
     safeHead,
     prepareConditions,
@@ -17,15 +19,19 @@ import Path.Posix (
     Dir,
     File,
     Path,
+    PathException,
     Rel,
     SomeBase (Abs, Rel),
     parseRelDir,
     parseSomeDir,
     parseSomeFile,
  )
+
+import Control.Exception (catch, throwIO)
+import Data.List.NonEmpty (NonEmpty, nonEmpty)
 import qualified System.Directory as D
 import qualified System.FilePath.Posix as FP
-import Data.List.NonEmpty (NonEmpty, nonEmpty)
+import Text.Pretty.Simple (pPrintString)
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -33,7 +39,7 @@ safeHead (a : _) = Just a
 
 -- Normalize functions
 
-normalizeDirAbs :: FilePath -> IO (Maybe (Path Abs Dir))
+normalizeDirAbs :: FilePath -> IO (Path Abs Dir)
 normalizeDirAbs path = do
     let (homeMarker, relPath) = splitAt 1 path
     path' <- E.whenMaybe (homeMarker == "~") $ do
@@ -41,8 +47,8 @@ normalizeDirAbs path = do
         pure $ home <> "/" <> relPath
     someDir <- parseSomeDir $ fromMaybe path path'
     case someDir of
-        Abs a -> pure $ Just a
-        Rel r -> Just <$> makeAbsolute r
+        Abs a -> pure a
+        Rel r -> makeAbsolute r
 
 normalizeFile :: FilePath -> IO (Maybe (Path Rel File))
 normalizeFile path =
@@ -59,20 +65,23 @@ prepareConditions
     -> IO (Maybe (NonEmpty Condition))
 prepareConditions raw = do
     conditions <- forM raw $ \RawCondition{..} -> do
-        mTarget <- normalizeDirAbs $ E.trim rcTarget
+        target <- catch @PathException (normalizeDirAbs $ E.trim rcTarget) $ \e -> do
+            pPrintString $ "Target path in condition " <> show rcIndex <> " is invalid"
+            throwIO e
         mFiles <- sequence <$> traverse normalizeFile (toList rcHasFiles)
         dirs <- traverse parseRelDir $ toList rcHasDirectories
         let normalizedExt e = if "." == take 1 e then e else '.' : e
         let exts = map normalizedExt $ toList rcHasExtensions
-        pure $ Condition {
-            cIndex = rcIndex,
-            cTarget = mTarget,
-            cFiles = mFiles,
-            cDirectories = dirs,
-            cExtensions = exts,
-            cCommand = rcCommand,
-            cArguments = rcArgs,
-            cActConcurrent = rcActConcurrent,
-            cWithBreak = rcWithBreak
-        }
+        pure $
+            Condition
+                { cIndex = rcIndex
+                , cTarget = target
+                , cFiles = mFiles
+                , cDirectories = dirs
+                , cExtensions = exts
+                , cCommand = rcCommand
+                , cArguments = rcArgs
+                , cActConcurrent = rcActConcurrent
+                , cWithBreak = rcWithBreak
+                }
     pure $ nonEmpty conditions

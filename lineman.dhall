@@ -14,7 +14,7 @@ let condition_1 : RawCondition =
   { rcIndex = 1
   -- Arbitrary index
   , rcTarget = "~/source/test/"  
-   -- ^ target where you plan that the lineman recursively starts from.
+   -- ^ first target where lineman starts recursively from.
    -- target consume 'rel', 'abs' and '~'' paths
   , rcHasFiles = ["log"] : List Text
   -- ^ Target directory has files

@@ -27,7 +27,6 @@ import System.Process.Typed
 import Witch
 import Prelude hiding (log)
 import System.Time.Extra (sleep)
--- import Data.List (uncons)
 
 launchSwarm :: App ()
 launchSwarm = do
@@ -38,8 +37,8 @@ launchSwarm = do
     let firstIndex = cIndex $ NonEmpty.head conditions
     forSwarm conditions $ \Condition{..} -> do
         when (cIndex /= firstIndex) $ liftIO $ sleep $ envSwarmBreak env
-        dirsForLaunch <- case (cTarget, cFiles) of
-            (Just target, Just files) -> getDirsForCommand target files cDirectories cExtensions
+        dirsForLaunch <- case cFiles of
+            Just files -> getDirsForCommand cTarget files cDirectories cExtensions
             _ -> pure []
         logDebug $ "Directories for running action: " <> into @Text (show dirsForLaunch)
         let forAction = if cActConcurrent then forConcurrentlyKi else forM

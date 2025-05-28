@@ -25,10 +25,10 @@ import Control.Monad.Reader (
     local,
  )
 import Control.Monad.Trans.Control (MonadBaseControl)
+import Data.List.NonEmpty (NonEmpty)
 import Katip (Katip (..), KatipContext (..), LogContexts, LogEnv (..), Namespace)
 import Path (File, Rel)
 import Path.Posix (Abs, Dir, Path)
-import Data.List.NonEmpty (NonEmpty)
 
 newtype App a = MkApp
     { unApp :: ReaderT Env IO a
@@ -79,7 +79,7 @@ data Env = Env
 
 data Condition = Condition
     { cIndex :: Word
-    , cTarget :: Maybe (Path Abs Dir)
+    , cTarget :: Path Abs Dir
     , cFiles :: Maybe [Path Rel File]
     , cDirectories :: [Path Rel Dir]
     , cExtensions :: [String]
