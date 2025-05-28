@@ -80,7 +80,7 @@ data Env = Env
 data Condition = Condition
     { cIndex :: Word
     , cTarget :: Path Abs Dir
-    , cFiles :: Maybe [Path Rel File]
+    , cFiles :: [Path Rel File]
     , cDirectories :: [Path Rel Dir]
     , cExtensions :: [String]
     , cCommand :: String

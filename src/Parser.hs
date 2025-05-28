@@ -23,15 +23,18 @@ import Path.Posix (
     Rel,
     SomeBase (Abs, Rel),
     parseRelDir,
+    parseRelFile,
     parseSomeDir,
-    parseSomeFile,
+    toFilePath,
  )
 
 import Control.Exception (catch, throwIO)
+import Control.Monad.Extra (whenM)
 import Data.List.NonEmpty (NonEmpty, nonEmpty)
+import System.Directory (doesDirectoryExist)
 import qualified System.Directory as D
-import qualified System.FilePath.Posix as FP
-import Text.Pretty.Simple (pPrintString)
+import Text.Pretty.Simple (pPrintString, pString)
+import Witch (into)
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing
@@ -39,44 +42,50 @@ safeHead (a : _) = Just a
 
 -- Normalize functions
 
-normalizeDirAbs :: FilePath -> IO (Path Abs Dir)
-normalizeDirAbs path = do
+normalizeDirAbs :: Word -> FilePath -> IO (Path Abs Dir)
+normalizeDirAbs index path = do
     let (homeMarker, relPath) = splitAt 1 path
     path' <- E.whenMaybe (homeMarker == "~") $ do
         home <- D.getHomeDirectory
         pure $ home <> "/" <> relPath
-    someDir <- parseSomeDir $ fromMaybe path path'
-    case someDir of
+    someDir <- catch @PathException (parseSomeDir $ fromMaybe path path') $ \e -> do
+        pPrintString $ "Target path " <> path <> " from condition " <> show index <> " is invalid"
+        throwIO e
+    aPath <- case someDir of
         Abs a -> pure a
         Rel r -> makeAbsolute r
+    whenM (not <$> doesDirectoryExist (toFilePath aPath)) $
+        throwIO $
+            userError $
+                into @String $
+                    pString "Target path not found"
+    pure aPath
 
-normalizeFile :: FilePath -> IO (Maybe (Path Rel File))
-normalizeFile path =
-    if FP.isRelative path && FP.isValid path && not (FP.hasTrailingPathSeparator path)
-        then do
-            someFile <- parseSomeFile path
-            case someFile of
-                Abs _ -> pure Nothing
-                Rel r -> pure $ Just r
-        else pure Nothing
+normalizeRelFile :: FilePath -> IO (Path Rel File)
+normalizeRelFile path = catch @PathException (parseRelFile path) $ \e -> do
+    pPrintString $ "File path " <> path <> " is invalid"
+    throwIO e
+
+normalizeRelDir :: FilePath -> IO (Path Rel Dir)
+normalizeRelDir path = catch @PathException (parseRelDir path) $ \e -> do
+    pPrintString $ "Directory path " <> path <> " is invalid"
+    throwIO e
 
 prepareConditions
     :: [RawCondition]
     -> IO (Maybe (NonEmpty Condition))
 prepareConditions raw = do
     conditions <- forM raw $ \RawCondition{..} -> do
-        target <- catch @PathException (normalizeDirAbs $ E.trim rcTarget) $ \e -> do
-            pPrintString $ "Target path in condition " <> show rcIndex <> " is invalid"
-            throwIO e
-        mFiles <- sequence <$> traverse normalizeFile (toList rcHasFiles)
-        dirs <- traverse parseRelDir $ toList rcHasDirectories
+        target <- normalizeDirAbs rcIndex $ E.trim rcTarget
+        files <- mapM normalizeRelFile $ toList rcHasFiles
+        dirs <- traverse normalizeRelDir $ toList rcHasDirectories
         let normalizedExt e = if "." == take 1 e then e else '.' : e
         let exts = map normalizedExt $ toList rcHasExtensions
         pure $
             Condition
                 { cIndex = rcIndex
                 , cTarget = target
-                , cFiles = mFiles
+                , cFiles = files
                 , cDirectories = dirs
                 , cExtensions = exts
                 , cCommand = rcCommand

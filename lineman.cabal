@@ -66,7 +66,6 @@ library
     , dhall
     , directory
     , extra
-    , filepath
     , katip
     , ki
     , monad-control
