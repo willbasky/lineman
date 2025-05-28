@@ -28,16 +28,20 @@ Lineman uses [dhall](https://dhall-lang.org) configuration. See [Config](./linem
 
 ## Term policy
 
-- `Action` - a single command that run in a directory due to particular `Conditions`
-- `Conditions` describe the directory has to have to run `Action`
-- `EntryPoint` is a parent directory where `lineman` starts seeking for `Targets`
-- `Target` is a directory that aligns to `Condition` 
-- `Swarm` is a bunch of `Actions` that match to `Condition`
-- `Hive` is a collection of `Swarms`
+- `Action` - a single command that run in a directory due to particular `conditions`
+- `Conditions` describe the directory has to have to run `action`
+- `EntryPoint` is a parent directory where `lineman` starts seeking for `targets`
+- `Target` is a directory that aligns to `condition` 
+- `Swarm` is a bunch of `actions` that match to `condition`
+- `Hive` is a collection of `swarms`
 
 ## Features 
 
-- Both `Actions` in `Swarm` and `Swarms` in `Hive` can be run concurrently or successively 
-- Both `Actions` and `Swarms` can be interspersed with breaks
+- Both `actions` in a `swarm` and `swarms` in a `hive` can be run concurrently or successively 
+- Both `actions` and `swarms` can be interspersed with breaks
+- `Lineman` starts seeking `targets` from `entryPoint` recursively and finds directories that have particular subdirectories, files or extensions. And then it run `Action` in found `targets`. 
 
+## Use cases
+
+- Clear build artefact in bunch of projects. 
 
