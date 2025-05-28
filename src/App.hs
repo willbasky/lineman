@@ -37,8 +37,8 @@ appLineman = do
                                     , envLogContext = mempty
                                     , envLogNamespace = mempty
                                     , envConditions = conditions
-                                    , envSwarmConcurrent = confSwarmConcurrent config
-                                    , envSwarmBreak = confSwarmBreak config
+                                    , envSwarmConcurrent = confConcurrentSwarms config
+                                    , envSwarmBreak = confBreakBetweenSwarms config
                                     }
                         runApp env launchSwarm
 

@@ -8,6 +8,10 @@ The changelog is available [on GitHub][2].
 * Restructure modules
 * Differ raw and domain types
 * Add option for swarm concurrency
+* Prevent processing of invalid paths and absent targets
+* Add delay option to config
+* Use clear namings
+* Update README
 
 ## 1.0.4
 

@@ -1,7 +1,7 @@
 let RawCondition : Type =
   { rcIndex : Natural
   -- Arbitrary index
-  , rcTarget : Text
+  , rcEntryPoint : Text
    -- ^ first target where lineman starts recursively from.
    -- target consume 'rel', 'abs' and '~'' paths
   , rcHasFiles : List Text
@@ -15,34 +15,34 @@ let RawCondition : Type =
   -- ^ Command to run in searched directories
   , rcArgs : List Text
   -- ^ Command's arguments
-  , rcActConcurrent : Bool
+  , rcConcurrentAgents : Bool
   -- ^ run actions concurrently within the particular condition
-  , rcWithBreak : Double
+  , rcBreakBetweenAgents : Double
   -- ^ Interval between actions in seconds
   }
 
 let condition_1 : RawCondition = 
   { rcIndex = 1
-  , rcTarget = "~/source/test/"  
+  , rcEntryPoint = "~/source/test/"  
   , rcHasFiles = ["a/log"] : List Text
   , rcHasDirectories = [] : List Text
   , rcHasExtensions = [] : List Text
   , rcCommand = "touch"
   , rcArgs = ["readme.txt"] : List Text
-  , rcActConcurrent = False
-  , rcWithBreak = 1.0
+  , rcConcurrentAgents = False
+  , rcBreakBetweenAgents = 1.0
   }
 
 let condition_2 : RawCondition = 
   { rcIndex = 2
-  , rcTarget = "~/source/test/"  
+  , rcEntryPoint = "~/source/test/"  
   , rcHasFiles = ["a/log"] : List Text
   , rcHasDirectories = [] : List Text
   , rcHasExtensions = [] : List Text
   , rcCommand = "rm"
   , rcArgs = ["readme.txt"] : List Text
-  , rcActConcurrent = False
-  , rcWithBreak = 1.0
+  , rcConcurrentAgents = False
+  , rcBreakBetweenAgents = 1.0
   }
 
 let Verbosity : Type = < V0 | V1 | V2 | V3 >
@@ -55,9 +55,9 @@ let Config : Type =
    , confSeverity : Severity
    , confVerbosity : Verbosity
 -- ^ level of verbosity
-   , confSwarmConcurrent : Bool
+   , confConcurrentSwarms : Bool
   -- ^ run the swarm of actions concurrently
-   , confSwarmBreak : Double
+   , confBreakBetweenSwarms : Double
   -- ^ add delay of running next batch of actions (in seconds)
    }
 
@@ -65,8 +65,8 @@ let config : Config =
   { confRawConditions = [ condition_1, condition_2 ] : List RawCondition
    , confSeverity = Severity.DebugS
    , confVerbosity = Verbosity.V0
-   , confSwarmConcurrent = False
-   , confSwarmBreak = 5.0
+   , confConcurrentSwarms = False
+   , confBreakBetweenSwarms = 5.0
    }
 
 in config

@@ -76,7 +76,7 @@ prepareConditions
     -> IO (Maybe (NonEmpty Condition))
 prepareConditions raw = do
     conditions <- forM raw $ \RawCondition{..} -> do
-        target <- normalizeDirAbs rcIndex $ E.trim rcTarget
+        target <- normalizeDirAbs rcIndex $ E.trim rcEntryPoint
         files <- mapM normalizeRelFile $ toList rcHasFiles
         dirs <- traverse normalizeRelDir $ toList rcHasDirectories
         let normalizedExt e = if "." == take 1 e then e else '.' : e
@@ -84,13 +84,13 @@ prepareConditions raw = do
         pure $
             Condition
                 { cIndex = rcIndex
-                , cTarget = target
+                , cEntryPoint = target
                 , cFiles = files
                 , cDirectories = dirs
                 , cExtensions = exts
                 , cCommand = rcCommand
                 , cArguments = rcArgs
-                , cActConcurrent = rcActConcurrent
-                , cWithBreak = rcWithBreak
+                , cActConcurrent = rcConcurrentAgents
+                , cWithBreak = rcBreakBetweenAgents
                 }
     pure $ nonEmpty conditions

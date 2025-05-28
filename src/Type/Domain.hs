@@ -79,7 +79,7 @@ data Env = Env
 
 data Condition = Condition
     { cIndex :: Word
-    , cTarget :: Path Abs Dir
+    , cEntryPoint :: Path Abs Dir
     , cFiles :: [Path Rel File]
     , cDirectories :: [Path Rel Dir]
     , cExtensions :: [String]

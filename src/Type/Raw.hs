@@ -17,14 +17,14 @@ import Katip (Severity, Verbosity)
 
 data RawCondition = RawCondition
     { rcIndex :: Word
-    , rcTarget :: FilePath
+    , rcEntryPoint :: FilePath
     , rcHasFiles :: Set FilePath
     , rcHasDirectories :: Set FilePath
     , rcHasExtensions :: Set String
     , rcCommand :: String
     , rcArgs :: [String]
-    , rcActConcurrent :: Bool
-    , rcWithBreak :: Double
+    , rcConcurrentAgents :: Bool
+    , rcBreakBetweenAgents :: Double
     }
     deriving stock (Eq, Show, Generic, Ord)
     deriving anyclass (FromDhall)
@@ -33,8 +33,8 @@ data Config = Config
     { confRawConditions :: [RawCondition]
     , confSeverity :: Severity
     , confVerbosity :: Verbosity
-    , confSwarmConcurrent :: Bool
-    , confSwarmBreak :: Double
+    , confConcurrentSwarms :: Bool
+    , confBreakBetweenSwarms :: Double
     }
     deriving stock (Eq, Show, Generic)
     deriving anyclass (FromDhall)

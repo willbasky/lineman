@@ -37,7 +37,7 @@ launchSwarm = do
     let firstIndex = cIndex $ NonEmpty.head conditions
     forSwarm conditions $ \Condition{..} -> do
         when (cIndex /= firstIndex) $ liftIO $ sleep $ envSwarmBreak env
-        dirsForLaunch <- getDirsForCommand cTarget cFiles cDirectories cExtensions
+        dirsForLaunch <- getDirsForCommand cEntryPoint cFiles cDirectories cExtensions
         logDebug $ "Directories for running action: " <> into @Text (show dirsForLaunch)
         let forAction = if cActConcurrent then forConcurrentlyKi else forM
         let firstDirectory = seq dirsForLaunch $ head dirsForLaunch
