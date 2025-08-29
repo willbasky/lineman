@@ -48,6 +48,7 @@ jobs:
         run: |
           "$HOME/.ghcup/bin/ghcup" install cabal 3.14.2.0 || (cat "$HOME"/.ghcup/logs/*.* && false)
           echo "CABAL=$HOME/.ghcup/bin/cabal-3.14.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
+      
       - name: Install GHC (GHCup)
         if: matrix.setup-method == 'ghcup'
         run: |
@@ -62,6 +63,7 @@ jobs:
           HCKIND: ${{ matrix.compilerKind }}
           HCNAME: ${{ matrix.compiler }}
           HCVER: ${{ matrix.compilerVersion }}
+      
       - name: Set PATH and environment variables
         run: |
           echo "$HOME/.cabal/bin" >> $GITHUB_PATH
@@ -78,9 +80,11 @@ jobs:
           HCKIND: ${{ matrix.compilerKind }}
           HCNAME: ${{ matrix.compiler }}
           HCVER: ${{ matrix.compilerVersion }}
+      
       - name: env
         run: |
           env
+      
       - name: write cabal config
         run: |
           mkdir -p $CABAL_DIR
@@ -105,14 +109,17 @@ jobs:
             ghc-options: $GHCJOBS +RTS -M3G -RTS
           EOF
           cat $CABAL_CONFIG
+      
       - name: versions
         run: |
           $HC --version || true
           $HC --print-project-git-commit-id || true
           $CABAL --version || true
+      
       - name: update cabal index
         run: |
           $CABAL v2-update -v
+      
       - name: install cabal-plan
         run: |
           mkdir -p $HOME/.cabal/bin
@@ -189,16 +196,20 @@ jobs:
       - name: build
         run: |
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH all --write-ghc-environment-files=always
+      
       - name: tests
         run: |
           $CABAL v2-test $ARG_COMPILER $ARG_TESTS $ARG_BENCH all --test-show-details=direct
+      
       - name: cabal check
         run: |
           cd ${PKGDIR_lineman} || false
           ${CABAL} -vnormal check
+      
       - name: haddock
         run: |
           $CABAL v2-haddock --disable-documentation --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
+      
       - name: unconstrained build
         run: |
           rm -f cabal.project.local
