@@ -18,8 +18,6 @@ on:
   - pull_request
 jobs:
   linux:
-    env:
-      RUNNER_TOOL_CACHE: /toolcache
     name: Haskell-CI - Linux - ${{ matrix.compiler }}
     runs-on: ubuntu-24.04
     timeout-minutes:
