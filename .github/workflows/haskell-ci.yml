@@ -35,13 +35,6 @@ jobs:
             allow-failure: false
       fail-fast: false
     steps:
-      - name: Set action path
-        run: |
-          if [ "$GITHUB_ACTIONS" = "true" ]; then
-            echo "CACHE_ACTION_PATH=" >> "$GITHUB_ENV"
-          else
-            echo "CACHE_ACTION_PATH=https://github.com/" >> "$GITHUB_ENV"
-          fi
       - name: apt-get install
         run: |
           apt-get update
@@ -129,10 +122,19 @@ jobs:
           rm -f cabal-plan.xz
           chmod a+x $HOME/.cabal/bin/cabal-plan
           cabal-plan --version
+
       - name: checkout
-        uses: ${{ env.CACHE_ACTION_PATH }}actions/checkout@v4.3.0
+        if: ${{ github.server_url == 'https://github.com' }}
+        uses: actions/checkout@v4.3.0
         with:
           path: source
+
+      - name: checkout
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: https://github.com/actions/checkout@v4.3.0
+        with:
+          path: source
+
       - name: initial cabal.project for sdist
         run: |
           touch cabal.project
@@ -165,25 +167,46 @@ jobs:
         run: |
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dry-run all
           cabal-plan
-      - name: restore cache
-        uses: ${{ env.CACHE_ACTION_PATH }}actions/cache/restore@v4
+
+      - name: restore cache (GitHub)
+        if: ${{ github.server_url == 'https://github.com' }}
+        uses: actions/cache/restore@v4
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
           restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
+
+      - name: restore cache (Gitea)
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: https://github.com/actions/cache/restore@v4
+        with:
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+          path: ~/.cabal/store
+          restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
+
       - name: install dependencies
         run: |
           $CABAL v2-build $ARG_COMPILER --disable-tests --disable-benchmarks --dependencies-only -j2 all
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dependencies-only -j2 all
+     
       - name: save cache
-        if: always()
-        uses: ${{ env.CACHE_ACTION_PATH }}actions/cache/save@v4
+        if: ${{ github.server_url == 'https://github.com' }} && always()
+        uses: actions/cache/save@v4
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
+     
+      - name: save cache
+        if: ${{ github.server_url != 'https://github.com' }} && always()
+        uses: https://github.com/actions/cache/save@v4
+        with:
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+          path: ~/.cabal/store
+     
       - name: build w/o tests
         run: |
           $CABAL v2-build $ARG_COMPILER --disable-tests --disable-benchmarks all
+      
       - name: build
         run: |
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH all --write-ghc-environment-files=always
