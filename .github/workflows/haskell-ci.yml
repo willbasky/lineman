@@ -124,16 +124,9 @@ jobs:
           cabal-plan --version
 
       - name: checkout
-        # if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/checkout@v4.3.0
         with:
           path: source
-
-      # - name: checkout
-      #   if: ${{ github.server_url != 'https://github.com' }}
-      #   uses: https://github.com/actions/checkout@v4.3.0
-      #   with:
-      #     path: source
 
       - name: initial cabal.project for sdist
         run: |
@@ -144,10 +137,12 @@ jobs:
         run: |
           mkdir -p sdist
           $CABAL sdist all --output-dir $GITHUB_WORKSPACE/sdist
+
       - name: unpack
         run: |
           mkdir -p unpacked
           find sdist -maxdepth 1 -type f -name '*.tar.gz' -exec tar -C $GITHUB_WORKSPACE/unpacked -xzvf {} \;
+
       - name: generate cabal.project
         run: |
           PKGDIR_lineman="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/lineman-[0-9.]*')"
@@ -163,18 +158,11 @@ jobs:
           $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: any.$_ installed\n" unless /^(lineman)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
+
       - name: dump install plan
         run: |
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dry-run all
           cabal-plan
-
-      # - name: restore cache (GitHub)
-      #   if: ${{ github.server_url == 'https://github.com' }}
-      #   uses: actions/cache/restore@v4
-      #   with:
-      #     key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
-      #     path: ~/.cabal/store
-      #     restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
 
       - name: restore cache
         uses: actions/cache/restore@v4
@@ -189,18 +177,10 @@ jobs:
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dependencies-only -j2 all
      
       - name: save cache
-        # if: ${{ github.server_url == 'https://github.com' }} && always()
         uses: actions/cache/save@v4
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
-     
-      # - name: save cache
-      #   if: ${{ github.server_url != 'https://github.com' }} && always()
-      #   uses: https://github.com/actions/cache/save@v4
-      #   with:
-      #     key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
-      #     path: ~/.cabal/store
      
       - name: build w/o tests
         run: |
