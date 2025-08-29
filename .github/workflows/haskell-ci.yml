@@ -124,16 +124,16 @@ jobs:
           cabal-plan --version
 
       - name: checkout
-        if: ${{ github.server_url == 'https://github.com' }}
+        # if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/checkout@v4.3.0
         with:
           path: source
 
-      - name: checkout
-        if: ${{ github.server_url != 'https://github.com' }}
-        uses: https://github.com/actions/checkout@v4.3.0
-        with:
-          path: source
+      # - name: checkout
+      #   if: ${{ github.server_url != 'https://github.com' }}
+      #   uses: https://github.com/actions/checkout@v4.3.0
+      #   with:
+      #     path: source
 
       - name: initial cabal.project for sdist
         run: |
@@ -168,17 +168,16 @@ jobs:
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dry-run all
           cabal-plan
 
-      - name: restore cache (GitHub)
-        if: ${{ github.server_url == 'https://github.com' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
-          path: ~/.cabal/store
-          restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
+      # - name: restore cache (GitHub)
+      #   if: ${{ github.server_url == 'https://github.com' }}
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+      #     path: ~/.cabal/store
+      #     restore-keys: ${{ runner.os }}-${{ matrix.compiler }}-
 
-      - name: restore cache (Gitea)
-        if: ${{ github.server_url != 'https://github.com' }}
-        uses: https://github.com/actions/cache/restore@v4
+      - name: restore cache
+        uses: actions/cache/restore@v4
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
@@ -190,18 +189,18 @@ jobs:
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dependencies-only -j2 all
      
       - name: save cache
-        if: ${{ github.server_url == 'https://github.com' }} && always()
+        # if: ${{ github.server_url == 'https://github.com' }} && always()
         uses: actions/cache/save@v4
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
      
-      - name: save cache
-        if: ${{ github.server_url != 'https://github.com' }} && always()
-        uses: https://github.com/actions/cache/save@v4
-        with:
-          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
-          path: ~/.cabal/store
+      # - name: save cache
+      #   if: ${{ github.server_url != 'https://github.com' }} && always()
+      #   uses: https://github.com/actions/cache/save@v4
+      #   with:
+      #     key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+      #     path: ~/.cabal/store
      
       - name: build w/o tests
         run: |
